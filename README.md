@@ -16,11 +16,17 @@ sie hält: ein Trackpad ohne Rand.
 Stand: Machbarkeitsprüfung, siehe [docs/feasibility.md](docs/feasibility.md) und die
 [Architekturentscheidungen](docs/adr/README.md).
 
+## Installieren
+
+`ReaperSpaceMouse-<Version>.pkg` öffnen (vorher REAPER beenden). Das Paket legt die Erweiterung nur für dich nach
+`~/Library/Application Support/REAPER/UserPlugins/reaper_spacemouse.dylib`. Entfernen: diese Datei löschen.
+
 ## Bauen
 
 ```sh
 make test        # Unit-Tests
 make run         # bauen, ins portable Entwicklungs-REAPER (.dev/reaper) installieren und starten
+make release     # signiertes, notarisiertes Installationspaket in dist/ (ADR-0009)
 ```
 
 Voraussetzungen: Xcode 27 / Swift 6.2 oder neuer; für den Treiberweg 3DxWare von 3Dconnexion.

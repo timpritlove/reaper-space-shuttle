@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Installer for the REAPER extension (ADR-0009). Installs into the current user's REAPER resource folder only:
+     ~/Library/Application Support/REAPER/UserPlugins. VERSION is replaced by Scripts/release.sh. -->
+<installer-gui-script minSpecVersion="2">
+    <title>TITLE</title>
+    <welcome file="welcome.html" mime-type="text/html"/>
+    <conclusion file="conclusion.html" mime-type="text/html"/>
+    <options customize="never" require-scripts="false" hostArchitectures="arm64,x86_64"/>
+    <domains enable_anywhere="false" enable_currentUserHome="true" enable_localSystem="false"/>
+    <allowed-os-versions>
+        <os-version min="14.0"/>
+    </allowed-os-versions>
+    <!-- Replacing the library of a running REAPER can crash it (ADR-0002): ask to quit REAPER first. -->
+    <installation-check script="reaperIsNotRunning()"/>
+    <script>
+    <![CDATA[
+    function reaperIsNotRunning() {
+        var running = system.applications.fromIdentifier('com.cockos.reaper');
+        if (running && running.length > 0) {
+            my.result.type = 'Fatal';
+            my.result.title = system.localizedString('REAPER_RUNNING_TITLE');
+            my.result.message = system.localizedString('REAPER_RUNNING_MESSAGE');
+            return false;
+        }
+        return true;
+    }
+    ]]>
+    </script>
+    <pkg-ref id="me.metaebene.reaper-spacemouse"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="me.metaebene.reaper-spacemouse"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="me.metaebene.reaper-spacemouse" visible="false">
+        <pkg-ref id="me.metaebene.reaper-spacemouse"/>
+    </choice>
+    <pkg-ref id="me.metaebene.reaper-spacemouse" version="VERSION" onConclusion="none">component.pkg</pkg-ref>
+</installer-gui-script>

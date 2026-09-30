@@ -31,6 +31,8 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 - `make build`, `make test` (swift-testing), `make install` (ins Entwicklungs-REAPER), `make run` (installieren,
   Entwicklungs-REAPER neu starten mit Diagnose in der Konsole), `make dev-reaper` (portables REAPER einrichten).
 - Nach jeder Code-Änderung, die der Nutzer ausprobieren soll: `make run`.
+- Release: `make release` (`Scripts/release.sh`) → signiertes, notarisiertes Paket `dist/ReaperSpaceMouse-<Version>.pkg`,
+  nur für den aktuellen Benutzer (ADR-0009); verweigert ungesicherte Änderungen, `VERSION` vorher erhöhen.
 - Nur das portable REAPER in `.dev/reaper` benutzen, nie Ultraschall oder `~/Library/Application Support/REAPER`
   (ADR-0007). Einstellungen: `.dev/reaper/reaper-extstate.ini`, Abschnitt `[spacemouse]`, dann Aktion
   „SpaceMouse: Reload settings“.

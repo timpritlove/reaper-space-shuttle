@@ -12,3 +12,4 @@ Process: [ADR-0001](0001-record-architecture-decisions.md). Template: [template.
 | [0006](0006-autoscroll-yields-to-the-spacemouse.md) | Suspend autoscroll while the SpaceMouse moves the view; the left button toggles it | accepted |
 | [0007](0007-develop-against-a-portable-reaper.md) | Develop and test against a portable REAPER in .dev, never against Ultraschall | accepted |
 | [0008](0008-register-with-3dxware-as-the-application.md) | Register with 3DxWare as the application, after REAPER has launched | accepted |
+| [0009](0009-distribute-as-a-per-user-installer-package.md) | Distribute as a signed, notarized per-user installer package | accepted |

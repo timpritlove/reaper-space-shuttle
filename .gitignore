@@ -2,3 +2,4 @@
 .swiftpm/
 .dev/
 .DS_Store
+dist/
