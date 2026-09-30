@@ -19,9 +19,14 @@ public struct NavigationSettings: Sendable, Equatable {
     }
 
     public var input = InputChoice.automatic
+    /// How to register with the 3DxWare driver: `app` (as the frontmost application) or `manual` (ADR-0003).
+    public var driverRegistration = "app"
     /// Value of a fully deflected axis; the driver scales its values, so this may need tuning there.
     public var fullScale = 350.0
     public var shaping = AxisShaping()
+    /// Overall speed factor for every movement (Tim, 2026-10-01): 1 is the baseline, which feels like the 3DxWare
+    /// speed slider in its middle position; experienced users may want more.
+    public var speed = 1.0
     /// View widths per second at full deflection.
     public var scrollSpeed = 3.0
     /// Natural-log zoom rate per second at full deflection: 3 means ×e³ ≈ 20 per second.
@@ -46,16 +51,24 @@ public struct NavigationSettings: Sendable, Equatable {
 
     public init() {}
 
+    /// Top speeds with the overall factor applied.
+    public var effectiveScrollSpeed: Double { scrollSpeed * speed }
+    public var effectiveZoomSpeed: Double { zoomSpeed * speed }
+    public var effectiveVerticalScrollSteps: Double { verticalScrollSteps * speed }
+    public var effectiveVerticalZoomSteps: Double { verticalZoomSteps * speed }
+
     /// Reads every known key through `lookup`; unknown values keep the default.
     public init(lookup: (String) -> String?) {
         func number(_ key: String) -> Double? { lookup(key).flatMap { Double($0.trimmingCharacters(in: .whitespaces)) } }
         func flag(_ key: String) -> Bool? { number(key).map { $0 != 0 } }
 
         if let value = lookup("input").flatMap(InputChoice.init(rawValue:)) { input = value }
+        if let value = lookup("driver_registration"), ["app", "manual"].contains(value) { driverRegistration = value }
         if let value = number("full_scale"), value > 0 { fullScale = value }
         if let value = number("deadzone"), (0..<1).contains(value) { shaping.deadzone = value }
         if let value = number("exponent"), value > 0 { shaping.exponent = value }
         if let value = number("crosstalk"), (0...1).contains(value) { shaping.crosstalkRatio = value }
+        if let value = number("speed"), (0.1...10).contains(value) { speed = value }
         if let value = number("scroll_speed"), value >= 0 { scrollSpeed = value }
         if let value = number("zoom_speed"), value >= 0 { zoomSpeed = value }
         if let value = number("vscroll_steps"), value >= 0 { verticalScrollSteps = value }

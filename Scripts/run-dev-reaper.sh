@@ -12,5 +12,8 @@ APP="$ROOT/.dev/reaper/REAPER.app"
 
 LOG="$ROOT/.dev/reaper.log"
 export SPACEMOUSE_LOG="${SPACEMOUSE_LOG:-$ROOT/.dev/spacemouse.log}"
-SPACEMOUSE_DIAGNOSTICS="${SPACEMOUSE_DIAGNOSTICS:-1}" nohup "$APP/Contents/MacOS/REAPER" >"$LOG" 2>&1 &
+# Launch through LaunchServices like a user would (not by executing the binary): the 3Dconnexion helper crashed on
+# the registration of a client from a REAPER started directly (2026-10-01, docs/feasibility.md).
+open -n -a "$APP" --env SPACEMOUSE_DIAGNOSTICS="${SPACEMOUSE_DIAGNOSTICS:-1}" --env SPACEMOUSE_LOG="$SPACEMOUSE_LOG" \
+  --stdout "$LOG" --stderr "$LOG"
 echo "Development REAPER started (log: $LOG, extension log: $SPACEMOUSE_LOG)"

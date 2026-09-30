@@ -41,8 +41,9 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 - REAPER-API nur auf dem Main Thread; Signaturen exakt nach `reaper_plugin_functions.h`; geladene dylib nie
   überschreiben, nur kopieren + umbenennen (ADR-0002).
 - 3DxWare-Helper, stagehand und Spacer nie beenden, um an das Gerät zu kommen. Nativ: Vendor- **und** Product-ID,
-  nur exklusiv öffnen, nichts ans Gerät schreiben. Treiber: manuellen Client nur aktivieren, solange REAPER aktiv ist;
-  Stille vom Treiber nicht als Loslassen deuten, bis gemessen (ADR-0003).
+  nur exklusiv öffnen, nichts ans Gerät schreiben. Stille vom Treiber nicht als Loslassen deuten, bis gemessen (ADR-0003).
+- Treiber: als Anwendung anmelden (`'****'` + Programmname), nie in `ReaperPluginEntry`, erst nach dem Start; die
+  manuelle Anmeldung nur als Einstellung. Der Helper 1.4.2 stürzte bei Anmeldung während des Starts ab (ADR-0008).
 - Bewegung nach vergangener Zeit, nie pro Takt oder Report; horizontal nur über `GetSet_ArrangeView2`; kein Takt ohne
   Bewegung (ADR-0004).
 - Vorzeichen und Belegung nur in `AxisMapping`/Einstellungen; Tempo folgt immer der Auslenkung (ADR-0005).

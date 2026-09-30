@@ -102,10 +102,11 @@ final class Navigator {
     }
 
     private func startInput(_ choice: NavigationSettings.InputChoice) {
+        let registration = DriverSpaceMouse.Registration(rawValue: settings.driverRegistration) ?? .application
         let input: SpaceMouseInput = switch choice {
-        case .driver: DriverSpaceMouse()
+        case .driver: DriverSpaceMouse(registration: registration)
         case .native: NativeSpaceMouse()
-        case .automatic: DriverSpaceMouse.isInstalled ? DriverSpaceMouse() : NativeSpaceMouse()
+        case .automatic: DriverSpaceMouse.isInstalled ? DriverSpaceMouse(registration: registration) : NativeSpaceMouse()
         }
         self.input = input
         log("using \(input.name)")
@@ -218,8 +219,8 @@ final class Navigator {
         let mapping = rightButton.isHeld ? settings.mapping.whileHeld : settings.mapping
         let scroll = shaped.value(for: .scroll, in: mapping)
         let zoom = shaped.value(for: .zoom, in: mapping)
-        let verticalScrollRate = shaped.value(for: .vscroll, in: mapping) * settings.verticalScrollSteps
-        let verticalZoomRate = shaped.value(for: .vzoom, in: mapping) * settings.verticalZoomSteps
+        let verticalScrollRate = shaped.value(for: .vscroll, in: mapping) * settings.effectiveVerticalScrollSteps
+        let verticalZoomRate = shaped.value(for: .vzoom, in: mapping) * settings.effectiveVerticalZoomSteps
         if rightButton.isHeld, settings.mapping.held.keys.contains(where: { shaped.value(for: $0, in: mapping) != 0 }) {
             rightButton.noteUsed()
         }
@@ -285,7 +286,7 @@ final class Navigator {
         let anchor = ArrangeMotion.anchor(settings.zoomAnchor, view: base, editCursor: api.editCursor,
                                           playPosition: playing ? api.playPosition : nil)
         setView(ArrangeMotion.step(base, scroll: scroll, zoom: zoom, anchor: anchor,
-                                   scrollSpeed: settings.scrollSpeed, zoomSpeed: settings.zoomSpeed,
+                                   scrollSpeed: settings.effectiveScrollSpeed, zoomSpeed: settings.effectiveZoomSpeed,
                                    deltaTime: deltaTime))
     }
 

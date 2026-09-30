@@ -26,6 +26,9 @@ scroll and zoom must work at the same time. Spacer's rate control uses a dead zo
   faster", then 500 and track height 8 → 80), track height on right button + twist, zoom out project on a double click of the right button.
 - Vertical scroll and track height go through `CSurf_OnScroll(0, n)` / `CSurf_OnZoom(0, n)`; a `StepAccumulator`
   turns the rate (`vscroll_steps` = 500, `vzoom_steps` = 80 per second at full deflection) into whole steps.
+- One overall factor `speed` (default 1 = the tested baseline) multiplies every top speed: scroll, zoom, track list,
+  track height (Tim: the baseline equals the 3DxWare speed slider in the middle; experienced users may want about
+  1.5).
 - Buttons: left toggles autoscroll (ADR-0006). The right button is a modifier, a click and a double click
   (`ModifierButton`): held, it gives the twist to the track height (`<role>_axis_held`, default `vzoom_axis_held=rz`;
   the axis leaves every other role meanwhile) and counts as no click; a click runs `right_click_action` (default

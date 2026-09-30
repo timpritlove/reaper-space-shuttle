@@ -113,6 +113,31 @@ action "SpaceMouse: Reload settings".
 - Found while testing: scroll during zoom was integrated with the end-of-tick width, a small tick-rate dependence;
   now integrated exactly.
 
+### 2026-10-01, driver path: the helper crashes
+
+- Five crashes of 3DconnexionHelper 1.4.2 (00:17, 00:55, 00:57, 00:58, 00:59), all with the identical stack
+  (helper offsets 96928/87024 ← notification ← 160320/150076 ← HID input report callback, `insertObject: nil`).
+- 00:55 and 00:57: 0.4 s after the extension called `RegisterConnexionClient` inside REAPER (clocks matched via
+  `systemUptime`); the call then timed out after 2 s ("Failed to connect to dedicated communication channel").
+  Launching REAPER through LaunchServices instead of executing the binary did not change it.
+- 00:58 and 00:59: the helper crashed 1.5 s after its own start, without any registration, while the development
+  REAPER was the active app (holding the device through the native fallback).
+- The same manual registration from stagehand's `spacemouse-probe` (command line, no bundle) works with 1.4.2:
+  client 4096, activation ok, no crash. On 2026-09-26 (helper 1.4.1) it worked too.
+- Without a running REAPER the helper stays up.
+- Hypothesis: the helper looks up its configuration for the *active application*; for REAPER it has none and inserts
+  nil. Next test (Tim's idea): add REAPER manually as an application in the 3DxWare settings.
+- The proper `pkill` hypothesis from the first crash is refuted (no client was registered at 00:55/00:57).
+
+### 2026-10-01, driver path works
+
+- After Tim added both REAPERs as applications in the 3DxWare settings, and with the registration changed to the
+  application style (`'****'` + process name) 2 s after start (ADR-0008): client 4096, no crash, everything works.
+  Data only while REAPER is frontmost; about 60 events per second while deflected; zero state on release.
+- With the 3DxWare speed slider in the middle the speeds equal the native path (Tim). Driver values are pre-scaled
+  (peaks up to 2640), so our curve saturates early; slider positions above the middle add nothing. Open.
+- Added an overall `speed` factor (default 1) for the native path, and for everyone who wants more.
+
 ## Later
 
 - Coexistence with stagehand (both want the device; with the driver path both could be clients).

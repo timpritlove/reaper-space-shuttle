@@ -3,17 +3,26 @@ import Foundation
 /// The SpaceMouse through 3Dconnexion's own driver (3DxWare), via its classic client API
 /// (`3DconnexionClient.framework`, loaded at runtime; ADR-0003).
 ///
-/// Registers a *manual* client (signature '++++', takeover mode) and activates it only while REAPER is the active
-/// app ('3dac'/'3ddc'). Measured in stagehand (docs/spacemouse-findings.md, "Routing"): a manual client receives
-/// device data as soon as it is activated, and the frontmost app's own client gets nothing meanwhile — which is why
-/// we deactivate as soon as REAPER is no longer frontmost.
+/// Two ways to register (`Registration`):
+/// - `application` (default): signature '****' with the process name, takeover mode — the way apps like Blender do it;
+///   the driver itself delivers data only while this app is frontmost.
+/// - `manual`: signature '++++', activated with '3dac' while REAPER is active and deactivated with '3ddc' otherwise
+///   (made for background clients; measured in stagehand's findings, "Routing").
+/// Registration waits until REAPER has finished launching: the helper crashed on a registration made while REAPER
+/// was loading its extensions (2026-10-01, docs/feasibility.md).
 @MainActor
 public final class DriverSpaceMouse: SpaceMouseInput {
+    public enum Registration: String, Sendable {
+        case application = "app"
+        case manual
+    }
+
     public let name = "3DxWare driver"
     /// Not yet measured whether the driver repeats unchanged states; assume it does not (ADR-0003).
     public let streamsWhileDeflected = false
 
     nonisolated static let frameworkPath = "/Library/Frameworks/3DconnexionClient.framework/3DconnexionClient"
+    nonisolated static let wildcardSignature: UInt32 = 0x2A2A_2A2A      // '****' kConnexionClientWildcard
     nonisolated static let manualSignature: UInt32 = 0x2B2B_2B2B        // '++++' kConnexionClientManual
     nonisolated static let modeTakeOver: UInt16 = 1                      // kConnexionClientModeTakeOver
     nonisolated static let maskAll: UInt32 = 0x3FFF                      // kConnexionMaskAll
@@ -21,22 +30,36 @@ public final class DriverSpaceMouse: SpaceMouseInput {
     nonisolated static let messageDeviceState: UInt32 = 0x3364_5352      // '3dSR'
     nonisolated static let controlActivate: UInt32 = 0x3364_6163         // '3dac'
     nonisolated static let controlDeactivate: UInt32 = 0x3364_6463       // '3ddc'
+    /// Seconds after `start` before registering, so REAPER has finished launching.
+    nonisolated static let registrationDelay = 2.0
 
     /// The one instance the C callbacks talk to; the client API has no context pointer.
     fileprivate static var current: DriverSpaceMouse?
 
+    private let registration: Registration
     private var api: ConnexionAPI?
     private var clientID: UInt16 = 0
     private var onEvent: (@MainActor (SpaceMouseEvent) -> Void)?
     private var active = false
+    private var clientActive = false
 
-    public init() {}
+    public init(registration: Registration = .application) {
+        self.registration = registration
+    }
 
     /// Whether the vendor framework is installed at all.
     public static var isInstalled: Bool { FileManager.default.fileExists(atPath: frameworkPath) }
 
     public func start(onEvent: @escaping @MainActor (SpaceMouseEvent) -> Void) {
         self.onEvent = onEvent
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.registrationDelay) { [weak self] in
+            guard let self, self.onEvent != nil else { return }
+            self.register()
+        }
+    }
+
+    private func register() {
+        guard api == nil, let onEvent else { return }
         guard Self.current == nil else {
             onEvent(.failed("another driver client is already running in this process"))
             return
@@ -52,33 +75,51 @@ public final class DriverSpaceMouse: SpaceMouseInput {
         Self.current = self
         let handlers = api.setHandlers(messageHandler, addedHandler, removedHandler, false)
         guard handlers == 0 else {
+            self.api = nil
             Self.current = nil
             onEvent(.failed("SetConnexionHandlers returned \(handlers) — is the 3Dconnexion helper running?"))
             return
         }
-        clientID = api.register(Self.manualSignature, nil, Self.modeTakeOver, Self.maskAll)
+        switch registration {
+        case .application:
+            // Pascal string with the executable name, as the driver matches the frontmost app by it.
+            let processName = Array(ProcessInfo.processInfo.processName.utf8.prefix(63))
+            var pascal = [UInt8(processName.count)] + processName
+            clientID = pascal.withUnsafeMutableBufferPointer {
+                api.register(Self.wildcardSignature, $0.baseAddress, Self.modeTakeOver, Self.maskAll)
+            }
+        case .manual:
+            clientID = api.register(Self.manualSignature, nil, Self.modeTakeOver, Self.maskAll)
+        }
         guard clientID != 0 else {
             api.cleanup()
+            self.api = nil
             Self.current = nil
             onEvent(.failed("RegisterConnexionClient returned no client ID"))
             return
         }
         api.setButtonMask(clientID, Self.maskAllButtons)
-        onEvent(.connected("\(name), client \(clientID)"))
-        if active { control(Self.controlActivate) }
+        onEvent(.connected("\(name) (\(registration.rawValue)), client \(clientID)"))
+        updateManualActivation()
     }
 
     public func setActive(_ active: Bool) {
-        guard active != self.active else { return }
         self.active = active
-        guard clientID != 0 else { return }
+        updateManualActivation()
+    }
+
+    /// Only the manual registration is switched by hand; the application registration follows the frontmost app.
+    private func updateManualActivation() {
+        guard registration == .manual, clientID != 0, active != clientActive else { return }
+        clientActive = active
         control(active ? Self.controlActivate : Self.controlDeactivate)
     }
 
     public func stop() {
         guard let api else { return }
+        onEvent = nil
         if clientID != 0 {
-            if active { control(Self.controlDeactivate) }
+            if clientActive { control(Self.controlDeactivate) }
             api.unregister(clientID)
             clientID = 0
         }

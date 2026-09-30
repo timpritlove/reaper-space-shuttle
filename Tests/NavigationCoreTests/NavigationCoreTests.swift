@@ -382,3 +382,16 @@ struct HeldButtonTests {
         #expect(NavigationSettings().verticalScrollSteps == 500)
     }
 }
+
+struct SpeedTests {
+    @Test func overallSpeedScalesEveryMovement() {
+        let settings = NavigationSettings { ["speed": "1.5"][$0] }
+        let base = NavigationSettings()
+        #expect(settings.effectiveScrollSpeed == base.scrollSpeed * 1.5)
+        #expect(settings.effectiveZoomSpeed == base.zoomSpeed * 1.5)
+        #expect(settings.effectiveVerticalScrollSteps == base.verticalScrollSteps * 1.5)
+        #expect(settings.effectiveVerticalZoomSteps == base.verticalZoomSteps * 1.5)
+        #expect(base.speed == 1)
+        #expect(NavigationSettings { ["speed": "0"][$0] }.speed == 1)   // out of range keeps the default
+    }
+}

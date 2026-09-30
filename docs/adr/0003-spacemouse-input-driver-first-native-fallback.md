@@ -1,6 +1,6 @@
 # ADR-0003: Read the SpaceMouse through the 3DxWare client API first, natively over HID as fallback
 
-- Status: accepted
+- Status: accepted; driver registration superseded by ADR-0008
 - Date: 2026-10-01
 
 ## Context

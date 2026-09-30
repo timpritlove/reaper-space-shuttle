@@ -10,7 +10,8 @@ BINARY="$ROOT/.dev/reaper/REAPER.app/Contents/MacOS/REAPER"
 PID="$(pgrep -f "$BINARY" || true)"
 [[ -z "$PID" ]] && exit 0
 
-osascript -l JavaScript -e "ObjC.import('AppKit'); \$.NSRunningApplication.runningApplicationWithProcessIdentifier($PID).terminate" >/dev/null
+# In the background: while REAPER asks whether to save, the call can block until someone answers.
+osascript -l JavaScript -e "ObjC.import('AppKit'); \$.NSRunningApplication.runningApplicationWithProcessIdentifier($PID).terminate" >/dev/null 2>&1 &
 for _ in {1..150}; do
   kill -0 "$PID" 2>/dev/null || exit 0
   sleep 0.1
