@@ -41,5 +41,7 @@ which installs and updates from within REAPER. Tim has a Developer ID Applicatio
 - `Scripts/release.sh`, `Packaging/distribution.xml`, `Packaging/Resources`.
 - Verified 2026-10-01: package signed (Developer ID Installer), notarization accepted, stapled, `spctl` "Notarized
   Developer ID"; payload is the universal, signed dylib.
-- Open checks: an actual installation (no admin prompt, file owned by the user despite `auth="root"` in the component
-  package info, refusal while REAPER runs, texts in both languages); loading in Ultraschall after installation.
+- Verified 2026-10-01 (release 0.1 installed by Tim): `reaper_spacemouse.dylib` lands in
+  `~/Library/Application Support/REAPER/UserPlugins`, owned by the user despite `auth="root"`; Ultraschall loads it
+  and navigation works through the 3DxWare driver.
+- Open checks: no admin prompt, refusal while REAPER runs, texts in both languages.

@@ -140,6 +140,16 @@ action "SpaceMouse: Reload settings".
 - 3DxWare forgot the application entries after its settings were reopened. Tested again without them (`input=auto`
   chose the driver): works, no crash. No setup step in 3DxWare needed.
 - Vertical lock added: a movement that starts horizontal does not scroll the track list (ADR-0005).
+- A sixth helper crash at 01:02:44 (helper started 01:00:18, same stack, from an input report); not noticed at the
+  time. Unclear whether it happened with the application registration. Its LaunchAgent has `KeepAlive` false, so
+  the helper stayed down until started by hand.
+
+### 2026-10-01, release 0.1 in Ultraschall
+
+- Installed with the package; on first launch `SetConnexionHandlers returned -36` and fallback to native HID. Cause:
+  the helper was not running (crashed at 01:02, see above), not the release. `-36` means "no helper".
+- After quitting Ultraschall, `open -a 3DconnexionHelper`, and relaunching Ultraschall: works through the driver, no
+  crash.
 
 ## Later
 

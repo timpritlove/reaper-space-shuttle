@@ -45,5 +45,7 @@ as a Pascal string, in takeover mode: the driver itself delivers data only while
 
 - `SpaceMouseKit/DriverSpaceMouse.swift` (`Registration`, `registrationDelay`), setting `driver_registration`.
 - Verified 2026-10-01 without application entries in 3DxWare: works, no crash.
-- Open checks: which of the two changes (application registration, delay) is the one that matters; Ultraschall;
+- Verified 2026-10-01 in Ultraschall (release 0.1): works with the application registration once the helper runs.
+- Open checks: which of the two changes (application registration, delay) is the one that matters; whether the
+  helper crash at 01:02 (docs/feasibility.md) happened with the application registration;
   what the driver's speed slider does to the values.
