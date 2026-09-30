@@ -137,6 +137,9 @@ action "SpaceMouse: Reload settings".
 - With the 3DxWare speed slider in the middle the speeds equal the native path (Tim). Driver values are pre-scaled
   (peaks up to 2640), so our curve saturates early; slider positions above the middle add nothing. Open.
 - Added an overall `speed` factor (default 1) for the native path, and for everyone who wants more.
+- 3DxWare forgot the application entries after its settings were reopened. Tested again without them (`input=auto`
+  chose the driver): works, no crash. No setup step in 3DxWare needed.
+- Vertical lock added: a movement that starts horizontal does not scroll the track list (ADR-0005).
 
 ## Later
 

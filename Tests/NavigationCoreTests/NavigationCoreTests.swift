@@ -395,3 +395,33 @@ struct SpeedTests {
         #expect(NavigationSettings { ["speed": "0"][$0] }.speed == 1)   // out of range keeps the default
     }
 }
+
+struct VerticalGateTests {
+    @Test func horizontalStartBlocksVerticalUntilItEnds() {
+        var gate = VerticalGate()
+        #expect(gate.filter(horizontal: 0.5, vertical: 0) == 0)
+        #expect(gate.filter(horizontal: 0.3, vertical: 0.6) == 0)     // drift forward while scrolling: ignored
+        #expect(gate.filter(horizontal: 0.2, vertical: 0.1) == 0)
+        #expect(gate.filter(horizontal: 0, vertical: 0.4) == 0.4)     // horizontal over, still pushing: vertical
+    }
+
+    @Test func verticalStartScrollsVertically() {
+        var gate = VerticalGate()
+        #expect(gate.filter(horizontal: 0.1, vertical: 0.5) == 0.5)
+        #expect(gate.filter(horizontal: 0.6, vertical: 0.2) == 0.2)   // stays vertical while it lasts
+        #expect(gate.filter(horizontal: 0.6, vertical: 0) == 0)       // vertical ended: now horizontal
+        #expect(gate.filter(horizontal: 0.4, vertical: 0.7) == 0)
+    }
+
+    @Test func restResetsTheGate() {
+        var gate = VerticalGate()
+        _ = gate.filter(horizontal: 0.5, vertical: 0)
+        _ = gate.filter(horizontal: 0, vertical: 0)
+        #expect(gate.filter(horizontal: 0, vertical: -0.3) == -0.3)
+    }
+
+    @Test func lockIsASetting() {
+        #expect(NavigationSettings().verticalLock)
+        #expect(!NavigationSettings { ["vertical_lock": "0"][$0] }.verticalLock)
+    }
+}

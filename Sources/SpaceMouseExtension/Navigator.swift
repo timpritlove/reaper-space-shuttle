@@ -32,6 +32,7 @@ final class Navigator {
     private var verticalZoom = StepAccumulator()
     private var autoscroll = AutoscrollGuard()
     private var glide: ReturnGlide?
+    private var verticalGate = VerticalGate()
     /// Found lazily: while extensions load, REAPER's own actions are not in the action list yet (seen with 7.81:
     /// only the 7 actions registered so far).
     private var resolvedAutoscrollCommands: (playback: Int, recording: Int)?
@@ -203,6 +204,7 @@ final class Navigator {
         ourView = nil
         verticalScroll.reset()
         verticalZoom.reset()
+        verticalGate = VerticalGate()
     }
 
     private func tick() {
@@ -219,7 +221,11 @@ final class Navigator {
         let mapping = rightButton.isHeld ? settings.mapping.whileHeld : settings.mapping
         let scroll = shaped.value(for: .scroll, in: mapping)
         let zoom = shaped.value(for: .zoom, in: mapping)
-        let verticalScrollRate = shaped.value(for: .vscroll, in: mapping) * settings.effectiveVerticalScrollSteps
+        var verticalValue = shaped.value(for: .vscroll, in: mapping)
+        if settings.verticalLock {
+            verticalValue = verticalGate.filter(horizontal: max(abs(scroll), abs(zoom)), vertical: verticalValue)
+        }
+        let verticalScrollRate = verticalValue * settings.effectiveVerticalScrollSteps
         let verticalZoomRate = shaped.value(for: .vzoom, in: mapping) * settings.effectiveVerticalZoomSteps
         if rightButton.isHeld, settings.mapping.held.keys.contains(where: { shaped.value(for: $0, in: mapping) != 0 }) {
             rightButton.noteUsed()

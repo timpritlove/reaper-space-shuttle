@@ -26,6 +26,10 @@ scroll and zoom must work at the same time. Spacer's rate control uses a dead zo
   faster", then 500 and track height 8 → 80), track height on right button + twist, zoom out project on a double click of the right button.
 - Vertical scroll and track height go through `CSurf_OnScroll(0, n)` / `CSurf_OnZoom(0, n)`; a `StepAccumulator`
   turns the rate (`vscroll_steps` = 500, `vzoom_steps` = 80 per second at full deflection) into whole steps.
+- Vertical lock (`VerticalGate`, setting `vertical_lock`, default on): the direction that dominates when a movement
+  starts wins. A movement that starts horizontal (scroll or zoom) blocks vertical scrolling until its horizontal part
+  ends; one that starts with vertical dominating scrolls vertically. Reason (Tim): mostly one wants to move only
+  horizontally, and the cap drifts forward while sliding sideways.
 - One overall factor `speed` (default 1 = the tested baseline) multiplies every top speed: scroll, zoom, track list,
   track height (Tim: the baseline equals the 3DxWare speed slider in the middle; experienced users may want about
   1.5).

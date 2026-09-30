@@ -35,6 +35,8 @@ public struct NavigationSettings: Sendable, Equatable {
     public var verticalScrollSteps = 500.0
     /// REAPER track-height steps per second at full deflection.
     public var verticalZoomSteps = 80.0
+    /// Block vertical scrolling while a movement that started horizontal goes on (`VerticalGate`).
+    public var verticalLock = true
     public var zoomAnchor = ZoomAnchor.automatic
     /// Ticks per second while moving (60 = every device report, 30 = every second one).
     public var tickRate = 60.0
@@ -73,6 +75,7 @@ public struct NavigationSettings: Sendable, Equatable {
         if let value = number("zoom_speed"), value >= 0 { zoomSpeed = value }
         if let value = number("vscroll_steps"), value >= 0 { verticalScrollSteps = value }
         if let value = number("vzoom_steps"), value >= 0 { verticalZoomSteps = value }
+        if let value = flag("vertical_lock") { verticalLock = value }
         if let value = lookup("zoom_anchor").flatMap(ZoomAnchor.init(rawValue:)) { zoomAnchor = value }
         if let value = number("tick_rate"), (1...240).contains(value) { tickRate = value }
         if let value = number("autoscroll_grace"), value >= 0 { autoscrollGrace = value }
