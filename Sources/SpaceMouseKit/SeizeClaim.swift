@@ -1,7 +1,7 @@
 import Foundation
 
 /// When the native input holds the device seized: only while its owner wants it (`setActive`), so another program's
-/// native input (SpaceScroll, Space Shuttle in REAPER) can take it in between (SpaceScroll ADR-0007, Space Shuttle
+/// native input (Space Glider, Space Shuttle in REAPER) can take it in between (Space Glider ADR-0007, Space Shuttle
 /// ADR-0015). Both react to the same app switch at about the same time; an open that comes before the other side has
 /// let go fails with `kIOReturnExclusiveAccess` and is retried for a while. Pure state, driven by `HIDReader` on its
 /// queue.

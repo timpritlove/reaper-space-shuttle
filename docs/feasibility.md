@@ -188,7 +188,7 @@ count watched, every `accelerator` hook call logged.
 ### 2026-10-01, native side by side with SpaceScroll (ADR-0015)
 
 - Helper stopped, `input` auto (fell back to native: `-36`, then "connected: native HID, SpaceMouse Compact"),
-  SpaceScroll (`~/src/timpritlove/spacescroll`) running natively at the same time.
+  SpaceScroll (now Space Glider, `~/src/timpritlove/space-glider`) running natively at the same time.
 - Tim: both work — Space Shuttle navigates while REAPER is in front, SpaceScroll scrolls the other apps.
 - Not checked in detail: Cmd-Tab with the cap deflected, "device busy", stray scrolling while switching, the LED after
   a reopen.

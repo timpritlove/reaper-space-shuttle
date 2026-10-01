@@ -7,13 +7,13 @@
 ## Context
 
 - With the 3DxWare helper stopped, Space Shuttle (`auto` falls back to native when the helper is not running) and
-  SpaceScroll (`~/src/timpritlove/spacescroll`, a menu bar app scrolling every other app with the SpaceMouse) could not
+  Space Glider (then Space Glider; `~/src/timpritlove/space-glider`, a menu bar app scrolling every other app with the SpaceMouse) could not
   run side by side (Tim, 2026-10-01): both opened the device seized at start and held it until quit, so whoever came
   second got `kIOReturnExclusiveAccess`.
 - The device admits one seized open at a time. Native input has no driver to route data; the programs have to take
   turns.
 - Space Shuttle already calls `setActive` when REAPER becomes or stops being the active app; for native HID that did
-  nothing. SpaceScroll leaves the device to REAPER (its `excluded_apps`, SpaceScroll ADR-0004).
+  nothing. Space Glider leaves the device to REAPER (its `excluded_apps`, Space Glider ADR-0004).
 - Both react to the same app switch at nearly the same moment; the one that wants the device may try before the other
   has let go.
 
@@ -25,11 +25,11 @@
   retried every 0.1 s for about 2 s; any other failure, and a busy device after the retries, is reported as `.failed`.
   A new `setActive` starts a fresh round and drops retries scheduled before it.
 - Letting go sends no event; reopening sends `.connected` again.
-- `SpaceMouseKit` is the same as in SpaceScroll for this (ADR-0007 there).
+- `SpaceMouseKit` is the same as in Space Glider for this (ADR-0007 there).
 
 ## Consequences
 
-- Space Shuttle and SpaceScroll work side by side on the native path; stagehand and Spacer can also have the device
+- Space Shuttle and Space Glider work side by side on the native path; stagehand and Spacer can also have the device
   while REAPER is in the background.
 - If another program still holds the device when REAPER comes to the front, Space Shuttle reports "device busy" after
   the retries and tries again at the next activation.
@@ -48,6 +48,6 @@
 ## Enforced and verified by
 
 - `SpaceMouseKit/SeizeClaim.swift`, `SpaceMouseKit/NativeSpaceMouse.swift` (`HIDReader`), `SeizeClaimTests`.
-- Verified 2026-10-01 at the device, helper stopped: the development REAPER with SpaceScroll (`input = native`),
+- Verified 2026-10-01 at the device, helper stopped: the development REAPER with Space Glider (`input = native`),
   both work, switching between REAPER and other apps (docs/feasibility.md, "Results").
 - Open checks: Cmd-Tab with the cap deflected; no "device busy" in either log; the LED after a reopen.
