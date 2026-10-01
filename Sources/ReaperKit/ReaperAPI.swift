@@ -27,6 +27,8 @@ public final class ReaperAPI {
     let _GetCursorPosition: @convention(c) () -> Double
     let _GetPlayPosition: @convention(c) () -> Double
     let _GetPlayState: @convention(c) () -> Int32
+    let _SetEditCurPos: @convention(c) (Double, Bool, Bool) -> Void
+    let _Master_GetPlayRate: @convention(c) (ReaProject?) -> Double
     let _GetToggleCommandState: @convention(c) (Int32) -> Int32
     let _Main_OnCommand: @convention(c) (Int32, Int32) -> Void
     let _CSurf_OnScroll: @convention(c) (Int32, Int32) -> Void
@@ -49,6 +51,8 @@ public final class ReaperAPI {
         _GetCursorPosition = try load("GetCursorPosition")
         _GetPlayPosition = try load("GetPlayPosition")
         _GetPlayState = try load("GetPlayState")
+        _SetEditCurPos = try load("SetEditCurPos")
+        _Master_GetPlayRate = try load("Master_GetPlayRate")
         _GetToggleCommandState = try load("GetToggleCommandState")
         _Main_OnCommand = try load("Main_OnCommand")
         _CSurf_OnScroll = try load("CSurf_OnScroll")
@@ -93,6 +97,13 @@ public final class ReaperAPI {
     public var playPosition: Double { _GetPlayPosition() }
     /// Bits: 1 = playing, 2 = paused, 4 = recording.
     public var playState: Int { Int(_GetPlayState()) }
+    /// The project's play rate (1 = normal speed).
+    public var playRate: Double { _Master_GetPlayRate(nil) }
+
+    /// Moves the edit cursor; `seekPlay` also moves the play position while playing or paused.
+    public func setEditCursor(_ time: Double, moveView: Bool = false, seekPlay: Bool) {
+        _SetEditCurPos(time, moveView, seekPlay)
+    }
 
     // MARK: - Actions
 

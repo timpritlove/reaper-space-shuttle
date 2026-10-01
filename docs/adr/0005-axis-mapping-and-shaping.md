@@ -13,7 +13,8 @@ scroll and zoom must work at the same time. Spacer's rate control uses a dead zo
 
 - Default mapping (setting `<role>_axis` = one axis, a comma list or `none`; `<role>_invert`). A role may take
   several axes; their shaped values add up, limited to ±1:
-  - slide left/right (x) **and** twist (rz) → horizontal scroll, right/clockwise = later;
+  - slide left/right (x) **and** twist (rz) → horizontal scroll, right/clockwise = later (twist moved to the play
+    cursor by ADR-0014);
   - push/pull (z) → horizontal zoom, push down = zoom in;
   - slide forward/back (y) → vertical scroll of the track list, forward = up;
   - track height (`vzoom`): no axis. REAPER changes it only in coarse steps, which does not fit the stepless rest.
@@ -36,7 +37,7 @@ scroll and zoom must work at the same time. Spacer's rate control uses a dead zo
 - Buttons: left toggles autoscroll (ADR-0006). The right button is a modifier, a click and a double click
   (`ModifierButton`): held, it gives the twist to the track height (`<role>_axis_held`, default `vzoom_axis_held=rz`;
   the axis leaves every other role meanwhile) and counts as no click; a click runs `right_click_action` (default
-  none); a double click within the system's double-click interval runs `right_double_click_action` (default 40295,
+  none; play/stop since ADR-0014); a double click within the system's double-click interval runs `right_double_click_action` (default 40295,
   "View: Zoom out project").
 
 ## Consequences

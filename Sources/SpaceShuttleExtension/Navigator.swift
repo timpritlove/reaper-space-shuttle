@@ -37,6 +37,8 @@ final class Navigator {
     private var autoscroll = AutoscrollGuard()
     private var glide: ReturnGlide?
     private var verticalGate = VerticalGate()
+    private var playhead = PlayheadMotion()
+    private var scrollOrPlayhead = ExclusiveGate()
     /// Found lazily: while extensions load, REAPER's own actions are not in the action list yet (seen with 7.81:
     /// only the 7 actions registered so far).
     private var resolvedAutoscrollCommands: (playback: Int, recording: Int)?
@@ -277,6 +279,8 @@ final class Navigator {
         verticalScroll.reset()
         verticalZoom.reset()
         verticalGate = VerticalGate()
+        playhead.reset()
+        scrollOrPlayhead = ExclusiveGate()
     }
 
     private func tick() {
@@ -291,11 +295,16 @@ final class Navigator {
 
         let shaped = settings.shaping.shaped(effective, fullScale: settings.fullScale)
         let mapping = rightButton.isHeld ? settings.mapping.whileHeld : settings.mapping
-        let scroll = shaped.value(for: .scroll, in: mapping)
         let zoom = shaped.value(for: .zoom, in: mapping)
+        let playState = api.playState
+        // Never while recording; scrolling and the play cursor exclude each other (ADR-0014).
+        let (scroll, playheadValue) = scrollOrPlayhead.filter(
+            shaped.value(for: .scroll, in: mapping),
+            playState & 4 != 0 ? 0 : shaped.value(for: .playhead, in: mapping))
         var verticalValue = shaped.value(for: .vscroll, in: mapping)
         if settings.verticalLock {
-            verticalValue = verticalGate.filter(horizontal: max(abs(scroll), abs(zoom)), vertical: verticalValue)
+            verticalValue = verticalGate.filter(horizontal: max(abs(scroll), abs(zoom), abs(playheadValue)),
+                                                vertical: verticalValue)
         }
         let verticalScrollRate = verticalValue * settings.effectiveVerticalScrollSteps
         let verticalZoomRate = shaped.value(for: .vzoom, in: mapping) * settings.effectiveVerticalZoomSteps
@@ -304,7 +313,7 @@ final class Navigator {
         }
         let horizontal = scroll != 0 || zoom != 0
 
-        let playing = api.playState & 5 != 0
+        let playing = playState & 5 != 0
         var gliding = false
         if horizontal {
             glide = nil
@@ -314,6 +323,11 @@ final class Navigator {
         } else {
             glide = nil
             ourView = nil
+        }
+        if playheadValue != 0 {
+            movePlayhead(playheadValue, playState: playState, deltaTime: deltaTime)
+        } else {
+            playhead.reset()
         }
         let rows = verticalScroll.steps(rate: verticalScrollRate, deltaTime: deltaTime)
         if rows != 0 { api.scroll(x: 0, y: rows) }
@@ -334,7 +348,7 @@ final class Navigator {
             }
         }
 
-        let resting = !horizontal && verticalScrollRate == 0 && verticalZoomRate == 0
+        let resting = !horizontal && playheadValue == 0 && verticalScrollRate == 0 && verticalZoomRate == 0
         if resting && !autoscroll.isHolding { stopTicking() }
     }
 
@@ -366,6 +380,22 @@ final class Navigator {
         setView(ArrangeMotion.step(base, scroll: scroll, zoom: zoom, anchor: anchor,
                                    scrollSpeed: settings.effectiveScrollSpeed, zoomSpeed: settings.effectiveZoomSpeed,
                                    deltaTime: deltaTime))
+    }
+
+    /// Moves the play cursor (ADR-0014): the edit cursor while stopped, the play position while playing or paused.
+    private func movePlayhead(_ value: Double, playState: Int, deltaTime: Double) {
+        let transport = playState & 3 != 0
+        let running = playState & 1 != 0 && playState & 2 == 0
+        let view = ourView ?? {
+            let current = api.arrangeView()
+            return TimeRange(start: current.start, end: current.end)
+        }()
+        let position = playhead.step(reaper: transport ? api.playPosition : api.editCursor,
+                                     playRate: running ? api.playRate : 0, value: value,
+                                     speed: settings.effectivePlayheadSpeed, viewWidth: view.width,
+                                     deltaTime: deltaTime)
+        api.setEditCursor(position, seekPlay: transport)
+        diagnostics?.playheadSets += 1
     }
 
     /// One step of the glide back to the play position (ADR-0006). Returns true while still under way.
@@ -499,6 +529,7 @@ final class Navigator {
 private final class Diagnostics {
     var ticks = 0
     var viewSets = 0
+    var playheadSets = 0
     private var axisEvents = 0
     private var zeroEvents = 0
     private var peak = SpaceMouseAxes.zero
@@ -535,12 +566,14 @@ private final class Diagnostics {
 
     private func flush() {
         guard axisEvents > 0 || ticks > 0 else { return }
-        write("Space Shuttle: \(axisEvents) axis events/s (\(zeroEvents) zero), \(ticks) ticks, \(viewSets) view sets; "
+        write("Space Shuttle: \(axisEvents) axis events/s (\(zeroEvents) zero), \(ticks) ticks, \(viewSets) view sets, "
+            + "\(playheadSets) play cursor sets; "
             + "last [\(last)] peak [\(peak)]\n")
         axisEvents = 0
         zeroEvents = 0
         ticks = 0
         viewSets = 0
+        playheadSets = 0
         peak = .zero
     }
 }

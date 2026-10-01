@@ -21,8 +21,8 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   `NativeSpaceMouse` (HID, exklusiv, aus Spacer portiert) hinter `SpaceMouseInput` (ADR-0003).
 - `Sources/NavigationCore` – reine Rechnung, getestet: `AxisShaping` (Totzone, Kennlinie, Übersprechen),
   `ArrangeMotion` (Geschwindigkeit → Ansicht, Anker, eigene Bruchteil-Ansicht), `StepAccumulator`,
-  `AutoscrollGuard`, `LEDFlash`, `SpeedScale`, `ControlsDescription`, `NavigationSettings` (ADR-0004 bis 0006,
-  0010, 0012).
+  `PlayheadMotion`, `AutoscrollGuard`, `LEDFlash`, `SpeedScale`, `ControlsDescription`, `NavigationSettings` (ADR-0004 bis 0006,
+  0010, 0012, 0014).
 - `Sources/SpaceShuttleExtension` – `PluginEntry` (Einstieg, Aktionen), `Navigator` (Takt, Ansicht, Autoscroll,
   Diagnose in der REAPER-Konsole), `SettingsWindow` (SwiftUI-Fenster „Space Shuttle: Settings…“, ADR-0012).
 - Verwandte Projekte: `~/src/timpritlove/reaper` (Show-Notes-Erweiterung, Swift-Muster), `~/src/timpritlove/stagehand`
@@ -49,6 +49,7 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   manuelle Anmeldung nur als Einstellung. Der Helper 1.4.2 stürzte bei Anmeldung während des Starts ab (ADR-0008).
 - Bewegung nach vergangener Zeit, nie pro Takt oder Report; horizontal nur über `GetSet_ArrangeView2`; kein Takt ohne
   Bewegung (ADR-0004).
+- Drehung bewegt den Abspielcursor (Geschwindigkeit wie beim Scrollen), nie während einer Aufnahme; Scrollen und Drehen schließen einander aus (ADR-0014).
 - Vorzeichen und Belegung nur in `AxisMapping`/Einstellungen; Tempo folgt immer der Auslenkung (ADR-0005).
 - Autoscroll nur über die Aktionen 40036/40262 (Name beim Start geprüft), nur zurückschalten, was der Guard selbst
   ausgeschaltet hat oder die Taste verlangt (ADR-0006).

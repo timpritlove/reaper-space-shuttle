@@ -6,11 +6,13 @@ Trackpad ohne Rand, oder eben ein Jog Shuttle im Raum.
 
 | Bewegung der Kappe | Wirkung |
 |---|---|
-| nach links/rechts schieben oder drehen | horizontal scrollen |
+| nach links/rechts schieben | horizontal scrollen |
 | drücken/ziehen | horizontal zoomen |
+| drehen | Playhead bewegen (gestoppt und bei Wiedergabe, nie bei Aufnahme) |
 | vor/zurück schieben | Spurliste scrollen |
 | rechte Taste halten und drehen | Spurhöhe |
 | linke Taste | Autoscroll ein/aus (beim Steuern ohnehin kurz aus, danach gleitet die Ansicht zum Playhead zurück) |
+| rechte Taste klicken | Start/Stop (einstellbar) |
 | rechte Taste doppelt klicken | Projekt einpassen (einstellbar) |
 
 Einstellungen (Geschwindigkeit, Modus, Belegung, Meldungen): Aktion „Space Shuttle: Settings…“. Mit dem 3DxWare-Treiber

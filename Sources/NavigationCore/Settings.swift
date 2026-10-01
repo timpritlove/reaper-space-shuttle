@@ -29,6 +29,8 @@ public struct NavigationSettings: Sendable, Equatable {
     public var speed = 1.0
     /// View widths per second at full deflection.
     public var scrollSpeed = 3.0
+    /// View widths per second the play cursor moves at full deflection (ADR-0014).
+    public var playheadSpeed = 1.0
     /// Natural-log zoom rate per second at full deflection: 3 means ×e³ ≈ 20 per second.
     public var zoomSpeed = 3.0
     /// REAPER track-list steps per second at full deflection (Tim, 2026-10-01: 20 was far too slow, 200 still too slow).
@@ -45,7 +47,8 @@ public struct NavigationSettings: Sendable, Equatable {
     /// Where the play position ends up in the view after gliding back to it: 0 = left edge, 0.5 = middle (ADR-0006).
     public var returnPosition = 0.5
     /// Action run by a click of the right button (released without being used as a modifier); 0 = none.
-    public var rightClickAction = 0
+    /// 40044 = "Transport: Play/stop" (Tim, 2026-10-01).
+    public var rightClickAction = 40044
     /// Action run by a double click of the right button; 40295 = "View: Zoom out project" (Tim, 2026-10-01).
     public var rightDoubleClickAction = 40295
     public var mapping = AxisMapping()
@@ -56,6 +59,7 @@ public struct NavigationSettings: Sendable, Equatable {
     /// Top speeds with the overall factor applied.
     public var effectiveScrollSpeed: Double { scrollSpeed * speed }
     public var effectiveZoomSpeed: Double { zoomSpeed * speed }
+    public var effectivePlayheadSpeed: Double { playheadSpeed * speed }
     public var effectiveVerticalScrollSteps: Double { verticalScrollSteps * speed }
     public var effectiveVerticalZoomSteps: Double { verticalZoomSteps * speed }
 
@@ -73,6 +77,7 @@ public struct NavigationSettings: Sendable, Equatable {
         if let value = number("speed"), (0.1...10).contains(value) { speed = value }
         if let value = number("scroll_speed"), value >= 0 { scrollSpeed = value }
         if let value = number("zoom_speed"), value >= 0 { zoomSpeed = value }
+        if let value = number("playhead_speed"), value >= 0 { playheadSpeed = value }
         if let value = number("vscroll_steps"), value >= 0 { verticalScrollSteps = value }
         if let value = number("vzoom_steps"), value >= 0 { verticalZoomSteps = value }
         if let value = flag("vertical_lock") { verticalLock = value }
@@ -102,12 +107,13 @@ public struct AxisMapping: Sendable, Equatable {
     }
 
     public enum Role: String, Sendable, CaseIterable {
-        case scroll, zoom, vscroll, vzoom
+        case scroll, zoom, playhead, vscroll, vzoom
     }
 
-    /// Slide right or twist clockwise → later, push down → zoom in, slide forward → up the track list. Track height is
-    /// off: REAPER only changes it in coarse steps, which does not fit the stepless rest (Tim, 2026-10-01).
-    public var axes: [Role: [Axis]] = [.scroll: [.x, .rz], .zoom: [.z], .vscroll: [.y], .vzoom: []]
+    /// Slide right → later, push down → zoom in, twist clockwise → play cursor later (ADR-0014), slide forward → up
+    /// the track list. Track height is off: REAPER only changes it in coarse steps, which does not fit the stepless
+    /// rest (Tim, 2026-10-01).
+    public var axes: [Role: [Axis]] = [.scroll: [.x], .zoom: [.z], .playhead: [.rz], .vscroll: [.y], .vzoom: []]
     /// While the right button is held, these roles take these axes, and the axes leave every other role:
     /// right button + twist = track height (Tim, 2026-10-01).
     public var held: [Role: [Axis]] = [.vzoom: [.rz]]

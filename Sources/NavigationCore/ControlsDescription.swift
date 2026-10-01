@@ -40,6 +40,7 @@ public struct ControlsDescription: Sendable, Equatable {
         switch role {
         case .scroll: "Scroll the timeline"
         case .zoom: "Zoom the timeline"
+        case .playhead: "Move the play cursor (not while recording)"
         case .vscroll: "Scroll the track list"
         case .vzoom: "Track height"
         }

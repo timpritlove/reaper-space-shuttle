@@ -36,13 +36,23 @@ struct AxisShapingTests {
         #expect(shaped[.z] > 0)
     }
 
-    @Test func twistScrollsLikeSliding() {
+    @Test func twistMovesThePlayCursorAndSlidingScrolls() {
         let mapping = AxisMapping()
         let twist = shaping.shaped(SpaceMouseAxes(rz: 350), fullScale: 350)
         let slide = shaping.shaped(SpaceMouseAxes(x: 350), fullScale: 350)
-        #expect(twist.value(for: .scroll, in: mapping) == 1)
+        #expect(twist.value(for: .playhead, in: mapping) == 1)
+        #expect(twist.value(for: .scroll, in: mapping) == 0)
         #expect(slide.value(for: .scroll, in: mapping) == 1)
+        #expect(slide.value(for: .playhead, in: mapping) == 0)
         #expect(twist.value(for: .vzoom, in: mapping) == 0)
+        let both = shaping.shaped(SpaceMouseAxes(x: 350, rz: 350), fullScale: 350)
+        #expect(both.value(for: .scroll, in: mapping) == 1)    // the shaping keeps both; ExclusiveGate picks one
+        #expect(both.value(for: .playhead, in: mapping) == 1)
+    }
+
+    @Test func multipleAxesAddUpLimited() {
+        var mapping = AxisMapping()
+        mapping[.scroll] = [.x, .rz]
         let both = shaping.shaped(SpaceMouseAxes(x: 350, rz: 350), fullScale: 350)
         #expect(both.value(for: .scroll, in: mapping) == 1)   // limited, not 2
     }
@@ -336,6 +346,7 @@ struct HeldButtonTests {
         let held = AxisMapping().whileHeld
         #expect(shaped.value(for: .vzoom, in: held) == 1)
         #expect(shaped.value(for: .scroll, in: held) == 0)
+        #expect(shaped.value(for: .playhead, in: held) == 0)
         let slide = AxisShaping().shaped(SpaceMouseAxes(x: 350), fullScale: 350)
         #expect(slide.value(for: .scroll, in: held) == 1)   // sliding still scrolls
     }
@@ -471,14 +482,16 @@ struct SpeedScaleTests {
 struct ControlsDescriptionTests {
     @Test func describesTheDefaults() {
         let description = ControlsDescription(settings: NavigationSettings(), ledFeedback: true) {
-            $0 == 40295 ? "View: Zoom out project" : nil
+            [40295: "View: Zoom out project", 40044: "Transport: Play/stop"][$0]
         }
-        #expect(description.cap.map(\.function) == ["Scroll the timeline", "Zoom the timeline", "Scroll the track list"])
-        #expect(description.cap.first?.control == "Slide left/right or twist")
+        #expect(description.cap.map(\.function) == ["Scroll the timeline", "Zoom the timeline",
+                                                     "Move the play cursor (not while recording)", "Scroll the track list"])
+        #expect(description.cap.first?.control == "Slide left/right")
+        #expect(description.cap[2].control == "Twist")
         #expect(description.buttons.map(\.control) == ["Left button", "Right button held + twist",
                                                        "Right button click", "Right button double click"])
         #expect(description.buttons[0].function.contains("LED"))
-        #expect(description.buttons[2].function == "Nothing")
+        #expect(description.buttons[2].function == "Transport: Play/stop")
         #expect(description.buttons[3].function == "View: Zoom out project")
     }
 
@@ -486,5 +499,62 @@ struct ControlsDescriptionTests {
         let description = ControlsDescription(settings: NavigationSettings(), ledFeedback: false) { _ in nil }
         #expect(description.buttons[0].function == "Autoscroll on/off")
         #expect(description.buttons[3].function == "Action 40295")
+    }
+}
+
+struct PlayheadMotionTests {
+    @Test func movesInViewWidthsPerSecond() {
+        var motion = PlayheadMotion()
+        let position = motion.step(reaper: 10, playRate: 0, value: 1, speed: 1, viewWidth: 20, deltaTime: 0.5)
+        #expect(position == 20)
+        let back = motion.step(reaper: 20, playRate: 0, value: -0.5, speed: 1, viewWidth: 20, deltaTime: 0.5)
+        #expect(back == 15)
+    }
+
+    @Test func stopsAtTheProjectStart() {
+        var motion = PlayheadMotion()
+        #expect(motion.step(reaper: 1, playRate: 0, value: -1, speed: 1, viewWidth: 20, deltaTime: 0.5) == 0)
+    }
+
+    @Test func keepsItsOwnPositionWhileREAPERLagsBehindASeek() {
+        var motion = PlayheadMotion()
+        let first = motion.step(reaper: 10, playRate: 1, value: 1, speed: 1, viewWidth: 1, deltaTime: 0.1)
+        #expect(abs(first - 10.1) < 1e-9)
+        // REAPER still reports the old position plus playback: ours runs on with the play rate.
+        let second = motion.step(reaper: 10.1, playRate: 1, value: 1, speed: 1, viewWidth: 1, deltaTime: 0.1)
+        #expect(abs(second - 10.3) < 1e-9)
+    }
+
+    @Test func adoptsREAPERsPositionAfterAJump() {
+        var motion = PlayheadMotion()
+        _ = motion.step(reaper: 10, playRate: 1, value: 1, speed: 1, viewWidth: 1, deltaTime: 0.1)
+        let looped = motion.step(reaper: 2, playRate: 1, value: 0, speed: 1, viewWidth: 1, deltaTime: 0.1)
+        #expect(looped == 2)
+    }
+}
+
+struct PlayheadSettingsTests {
+    @Test func readsSpeedAndAxis() {
+        let values = ["playhead_speed": "2.5", "playhead_axis": "ry", "speed": "2"]
+        let settings = NavigationSettings { values[$0] }
+        #expect(settings.playheadSpeed == 2.5)
+        #expect(settings.effectivePlayheadSpeed == 5)
+        #expect(settings.mapping[.playhead] == [.ry])
+    }
+}
+
+struct ExclusiveGateTests {
+    @Test func firstToStartWinsUntilItRests() {
+        var gate = ExclusiveGate()
+        #expect(gate.filter(0.5, 0) == (0.5, 0))
+        #expect(gate.filter(0.5, 0.8) == (0.5, 0))     // twist while scrolling does not count
+        #expect(gate.filter(0, 0.8) == (0, 0.8))       // scroll ended: the twist takes over
+        #expect(gate.filter(0.9, 0.8) == (0, 0.8))     // and now scrolling does not count
+        #expect(gate.filter(0, 0) == (0, 0))
+    }
+
+    @Test func strongerWinsWhenBothStartTogether() {
+        var gate = ExclusiveGate()
+        #expect(gate.filter(0.2, -0.6) == (0, -0.6))
     }
 }
