@@ -20,6 +20,8 @@ public protocol SpaceMouseInput: AnyObject {
     func start(onEvent: @escaping @MainActor (SpaceMouseEvent) -> Void)
     /// Called when REAPER becomes the active app or stops being it.
     func setActive(_ active: Bool)
+    /// Switches the device's LED where the input can (ADR-0010). Fire and forget: failures never stop the input.
+    func setLED(_ on: Bool)
     func stop()
 }
 

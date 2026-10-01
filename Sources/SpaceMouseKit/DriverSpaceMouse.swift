@@ -30,6 +30,7 @@ public final class DriverSpaceMouse: SpaceMouseInput {
     nonisolated static let messageDeviceState: UInt32 = 0x3364_5352      // '3dSR'
     nonisolated static let controlActivate: UInt32 = 0x3364_6163         // '3dac'
     nonisolated static let controlDeactivate: UInt32 = 0x3364_6463       // '3ddc'
+    nonisolated static let controlSetLED: UInt32 = 0x3364_736C           // '3dsl' kConnexionCtlSetLEDState
     /// Seconds after `start` before registering, so REAPER has finished launching.
     nonisolated static let registrationDelay = 2.0
 
@@ -113,6 +114,15 @@ public final class DriverSpaceMouse: SpaceMouseInput {
         guard registration == .manual, clientID != 0, active != clientActive else { return }
         clientActive = active
         control(active ? Self.controlActivate : Self.controlDeactivate)
+    }
+
+    /// The driver accepts '3dsl' but leaves the SpaceMouse Compact's LED as it is (stagehand findings, confirmed in
+    /// REAPER 2026-10-01); sent anyway for models that may honour it. Reports no `.failed` event: that would make
+    /// `auto` fall back to native HID over a cosmetic call.
+    public func setLED(_ on: Bool) {
+        guard let api, clientID != 0 else { return }
+        var result: Int32 = 0
+        _ = api.control(clientID, Self.controlSetLED, on ? 1 : 0, &result)
     }
 
     public func stop() {

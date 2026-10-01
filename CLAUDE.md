@@ -21,7 +21,7 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   `NativeSpaceMouse` (HID, exklusiv, aus Spacer portiert) hinter `SpaceMouseInput` (ADR-0003).
 - `Sources/NavigationCore` – reine Rechnung, getestet: `AxisShaping` (Totzone, Kennlinie, Übersprechen),
   `ArrangeMotion` (Geschwindigkeit → Ansicht, Anker, eigene Bruchteil-Ansicht), `StepAccumulator`,
-  `AutoscrollGuard`, `NavigationSettings` (ADR-0004 bis 0006).
+  `AutoscrollGuard`, `LEDFlash`, `NavigationSettings` (ADR-0004 bis 0006, 0010).
 - `Sources/SpaceMouseExtension` – `PluginEntry` (Einstieg, Aktionen), `Navigator` (Takt, Ansicht, Autoscroll,
   Diagnose in der REAPER-Konsole).
 - Verwandte Projekte: `~/src/timpritlove/reaper` (Show-Notes-Erweiterung, Swift-Muster), `~/src/timpritlove/stagehand`
@@ -43,7 +43,7 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 - REAPER-API nur auf dem Main Thread; Signaturen exakt nach `reaper_plugin_functions.h`; geladene dylib nie
   überschreiben, nur kopieren + umbenennen (ADR-0002).
 - 3DxWare-Helper, stagehand und Spacer nie beenden, um an das Gerät zu kommen. Nativ: Vendor- **und** Product-ID,
-  nur exklusiv öffnen, nichts ans Gerät schreiben. Stille vom Treiber nicht als Loslassen deuten, bis gemessen (ADR-0003).
+  nur exklusiv öffnen, nur verstandene Output-Reports schreiben (LED = Report 4), nie Vendor-Feature-Reports (ADR-0010). Stille vom Treiber nicht als Loslassen deuten, bis gemessen (ADR-0003).
 - Treiber: als Anwendung anmelden (`'****'` + Programmname), nie in `ReaperPluginEntry`, erst nach dem Start; die
   manuelle Anmeldung nur als Einstellung. Der Helper 1.4.2 stürzte bei Anmeldung während des Starts ab (ADR-0008).
 - Bewegung nach vergangener Zeit, nie pro Takt oder Report; horizontal nur über `GetSet_ArrangeView2`; kein Takt ohne
@@ -51,3 +51,5 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 - Vorzeichen und Belegung nur in `AxisMapping`/Einstellungen; Tempo folgt immer der Auslenkung (ADR-0005).
 - Autoscroll nur über die Aktionen 40036/40262 (Name beim Start geprüft), nur zurückschalten, was der Guard selbst
   ausgeschaltet hat oder die Taste verlangt (ADR-0006).
+- LED: nativ Report 4, beim Treiber `'3dsl'` (wirkt bei der Compact nicht); jedes Muster endet mit LED an;
+  LED-Fehler stoppen oder wechseln nie den Eingang (ADR-0010).

@@ -44,6 +44,9 @@ final class Navigator {
         return resolvedAutoscrollCommands
     }
 
+    /// Bumped by every LED pattern, so a newer one (or `stop`) cancels the steps of an older one.
+    private var ledPattern = 0
+
     private var observers: [NSObjectProtocol] = []
     private var diagnostics: Diagnostics?
 
@@ -71,6 +74,10 @@ final class Navigator {
     func stop() {
         releaseAutoscroll()
         stopTicking()
+        if ledPattern > 0 {
+            ledPattern += 1
+            input?.setLED(true)
+        }
         input?.stop()
         input = nil
         diagnostics = nil
@@ -343,8 +350,23 @@ final class Navigator {
         let current = readAutoscroll(commands)
         if let target = autoscroll.toggle(current: current) {
             apply(target, current: current, commands: commands)
+            flashLED(autoscrollOn: target.any)
         } else {
             log("autoscroll after rest: \(autoscroll.suspended.any ? "on" : "off")")
+            flashLED(autoscrollOn: autoscroll.suspended.any)
+        }
+    }
+
+    /// Confirms the button at the device (ADR-0010): one flash for on, two for off.
+    private func flashLED(autoscrollOn: Bool) {
+        guard let input else { return }
+        ledPattern += 1
+        let pattern = ledPattern
+        for step in LEDFlash.autoscroll(on: autoscrollOn) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + step.delay) { [weak self, weak input] in
+                guard let self, let input, input === self.input, pattern == self.ledPattern else { return }
+                input.setLED(step.on)
+            }
         }
     }
 

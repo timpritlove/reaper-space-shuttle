@@ -3,8 +3,9 @@ import IOKit.hid
 
 /// The SpaceMouse Compact read directly over HID, without the 3Dconnexion driver (ADR-0003). Ported from Spacer's
 /// `SpaceMouseHID`, which follows stagehand's rules: match vendor and product ID exactly, open seized (a shared open
-/// turns the cap into scroll events), write nothing to the device, keep the report buffer alive until the device's
-/// cancel handler ran. Fails with `kIOReturnExclusiveAccess` while the 3Dconnexion helper holds the device.
+/// turns the cap into scroll events), keep the report buffer alive until the device's cancel handler ran. Writes only
+/// the LED's output report (ADR-0010). Fails with `kIOReturnExclusiveAccess` while the 3Dconnexion helper holds the
+/// device.
 @MainActor
 public final class NativeSpaceMouse: SpaceMouseInput {
     public let name = "native HID"
@@ -22,6 +23,8 @@ public final class NativeSpaceMouse: SpaceMouseInput {
     /// The device stays seized while REAPER is in the background; the navigator ignores its data then.
     public func setActive(_ active: Bool) {}
 
+    public func setLED(_ on: Bool) { reader.setLED(on) }
+
     public func stop() { reader.stop() }
 }
 
@@ -29,6 +32,8 @@ public final class NativeSpaceMouse: SpaceMouseInput {
 private final class HIDReader: @unchecked Sendable {
     static let vendorID = 0x256F
     static let productID = 0xC635
+    /// Output report 4, one bit: the LED (`04 01` on, `04 00` off; measured in stagehand, 2026-09-26).
+    static let ledReportID: UInt8 = 4
 
     private let queue = DispatchQueue(label: "reaper-spacemouse.hid", qos: .userInteractive)
     private var onEvent: (@Sendable (SpaceMouseEvent) -> Void)?
@@ -38,6 +43,7 @@ private final class HIDReader: @unchecked Sendable {
     private var device: IOHIDDevice?
     private var registryID: UInt64?
     private var reports: ReportBuffer?
+    private var ledFailed = false
 
     func start(onEvent: @escaping @Sendable (SpaceMouseEvent) -> Void) {
         queue.async {
@@ -53,6 +59,18 @@ private final class HIDReader: @unchecked Sendable {
                 IOHIDManagerCancel(manager)
                 self.manager = nil
             }
+        }
+    }
+
+    /// On the HID queue, so the USB transfer never blocks REAPER's main thread. A failure is reported once per device.
+    func setLED(_ on: Bool) {
+        queue.async {
+            guard let device = self.device else { return }
+            var report: [UInt8] = [Self.ledReportID, on ? 1 : 0]
+            let result = IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, CFIndex(Self.ledReportID), &report, report.count)
+            guard result != kIOReturnSuccess, !self.ledFailed else { return }
+            self.ledFailed = true
+            self.onEvent?(.failed(String(format: "LED not switched (0x%08X)", UInt32(bitPattern: result))))
         }
     }
 
@@ -114,6 +132,7 @@ private final class HIDReader: @unchecked Sendable {
         self.device = device
         self.reports = reports
         self.registryID = id
+        ledFailed = false
         onEvent?(.connected("native HID, SpaceMouse Compact"))
     }
 

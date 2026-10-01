@@ -425,3 +425,21 @@ struct VerticalGateTests {
         #expect(!NavigationSettings { ["vertical_lock": "0"][$0] }.verticalLock)
     }
 }
+
+struct LEDFlashTests {
+    @Test func onFlashesOnceOffTwice() {
+        #expect(LEDFlash.autoscroll(on: true).filter { !$0.on }.count == 1)
+        #expect(LEDFlash.autoscroll(on: false).filter { !$0.on }.count == 2)
+    }
+
+    @Test func alternatesAndEndsLit() {
+        let steps = LEDFlash.steps(count: 2, phase: 0.1)
+        #expect(steps.map(\.on) == [false, true, false, true])
+        #expect(abs(steps[3].delay - 0.3) < 1e-9)
+        #expect(zip(steps, steps.dropFirst()).allSatisfy { $0.delay < $1.delay })
+    }
+
+    @Test func noFlashesNoSteps() {
+        #expect(LEDFlash.steps(count: 0).isEmpty)
+    }
+}

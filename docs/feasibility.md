@@ -151,6 +151,13 @@ action "SpaceMouse: Reload settings".
 - After quitting Ultraschall, `open -a 3DconnexionHelper`, and relaunching Ultraschall: works through the driver, no
   crash.
 
+### 2026-10-01, LED flash for the autoscroll button (ADR-0010)
+
+- Driver path: the flash is not visible (Tim). `'3dsl'` returned 0 (nothing logged), matching stagehand's finding
+  that the driver ignores it on the Compact. Writing report 4 past the helper fails (`kIOReturnNotOpen` without an
+  open, `kIOReturnExclusiveAccess` with a shared one), so the LED is native only.
+- Native path: built, not yet seen at the device.
+
 ## Later
 
 - Coexistence with stagehand (both want the device; with the driver path both could be clients).
