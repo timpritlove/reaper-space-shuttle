@@ -1,74 +1,79 @@
 {
-  "fill" : {
-    "linear-gradient" : [
+  "fill": {
+    "linear-gradient": [
       "extended-srgb:0.45098,0.60784,0.82353,1.00000",
       "extended-srgb:0.14902,0.23137,0.42353,1.00000"
     ]
   },
-  "groups" : [
+  "groups": [
     {
-      "name" : "Cap",
-      "layers" : [
+      "name": "Cap",
+      "layers": [
         {
-          "glass" : false,
-          "image-name" : "dimple.png",
-          "name" : "Dimple"
+          "glass": false,
+          "image-name": "dimple.png",
+          "name": "Dimple"
         },
         {
-          "glass" : true,
-          "image-name" : "cap.png",
-          "name" : "Cap"
+          "glass": true,
+          "image-name": "cap.png",
+          "name": "Cap"
         }
       ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.6
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.6
       },
-      "translucency" : {
-        "enabled" : false,
-        "value" : 0
+      "translucency": {
+        "enabled": false,
+        "value": 0
       }
     },
     {
-      "name" : "LED",
-      "specular" : false,
-      "layers" : [
+      "name": "LED",
+      "specular": false,
+      "layers": [
         {
-          "glass" : false,
-          "image-name" : "led.png",
-          "name" : "LED ring"
+          "glass": false,
+          "image-name": "led.png",
+          "name": "LED ring"
         }
       ],
-      "shadow" : {
-        "kind" : "none",
-        "opacity" : 0.5
+      "shadow": {
+        "kind": "none",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : false,
-        "value" : 0
+      "translucency": {
+        "enabled": false,
+        "value": 0
       }
     },
     {
-      "name" : "Base",
-      "layers" : [
+      "name": "Base",
+      "layers": [
         {
-          "glass" : true,
-          "image-name" : "base.png",
-          "name" : "Base"
+          "glass": true,
+          "image-name": "base.png",
+          "name": "Base"
+        },
+        {
+          "glass": false,
+          "image-name": "shadow.png",
+          "name": "Contact shadow"
         }
       ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : false,
-        "value" : 0
+      "translucency": {
+        "enabled": false,
+        "value": 0
       }
     }
   ],
-  "supported-platforms" : {
-    "squares" : [
+  "supported-platforms": {
+    "squares": [
       "macOS"
     ]
   }

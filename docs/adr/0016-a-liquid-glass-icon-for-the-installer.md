@@ -16,8 +16,9 @@ which are not part of the signature. What the installer can show is a background
 
 ## Decision
 
-- Motif: a SpaceMouse seen from above (dark base, blue LED ring, knurled cap) whose cap has the finger dimple of a
-  jog shuttle, on a blue gradient. A first draft with a Space Shuttle orbiting on a jog shuttle ring was too busy
+- Motif: a SpaceMouse as it stands on a desk, seen from the front and above (like the SpaceMouse Wireless: black top
+  with a blue LED ring, a rounded base of brushed aluminium below that runs flush into black plastic above, a knurled black cap, contact shadow), whose cap has the finger dimple of a jog shuttle, on a blue gradient. Straight from above it did
+  not read as the device (Tim). A first draft with a Space Shuttle orbiting on a jog shuttle ring was too busy
   (Tim); the name already says "space", the dimple says "shuttle".
 - `Packaging/AppIcon.icon` in Icon Composer format; its layers are drawn by code (`Scripts/make-icon-layers.swift`,
   CoreGraphics), not by hand, so the icon can be changed and rebuilt.

@@ -1,6 +1,6 @@
 # Space Shuttle
 
-<img src="docs/icon.png" width="128" alt="Space Shuttle icon: a SpaceMouse from above with the finger dimple of a jog shuttle on its cap">
+<img src="docs/icon.png" width="128" alt="Space Shuttle icon: a SpaceMouse on a desk, seen from the front, with the finger dimple of a jog shuttle on its cap">
 
 Eine native REAPER-Erweiterung für macOS: Die 3Dconnexion SpaceMouse scrollt und zoomt die Arrange-Ansicht
 stufenlos. Je weiter die Kappe ausgelenkt ist, desto schneller bewegt sich die Ansicht, solange man sie hält: ein
