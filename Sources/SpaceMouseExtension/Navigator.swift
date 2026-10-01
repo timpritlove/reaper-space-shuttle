@@ -47,6 +47,16 @@ final class Navigator {
     /// Bumped by every LED pattern, so a newer one (or `stop`) cancels the steps of an older one.
     private var ledPattern = 0
 
+    /// What a user may want to know (failures, fallbacks, confirmations), newest last, for a settings window to show
+    /// (ADR-0011). Never put into the console unless diagnostics are on.
+    private(set) var messages: [Message] = []
+    static let messageLimit = 100
+
+    struct Message {
+        let date: Date
+        let text: String
+    }
+
     private var observers: [NSObjectProtocol] = []
     private var diagnostics: Diagnostics?
 
@@ -94,12 +104,12 @@ final class Navigator {
             input = nil
             startInput(settings.input)
         }
-        console("SpaceMouse: settings reloaded\n")
+        report("settings reloaded")
     }
 
     func toggleEnabled() {
         enabled.toggle()
-        console("SpaceMouse: navigation \(enabled ? "on" : "off")\n")
+        report("navigation \(enabled ? "on" : "off")")
         if !enabled { releaseAutoscroll() }
     }
 
@@ -157,9 +167,9 @@ final class Navigator {
             axes = .zero
             releaseAutoscroll()
         case .failed(let reason):
-            console("SpaceMouse: \(input.name): \(reason)\n")
+            report("\(input.name): \(reason)")
             if choice == .automatic, input is DriverSpaceMouse {
-                console("SpaceMouse: falling back to native HID\n")
+                report("falling back to native HID")
                 input.stop()
                 self.input = nil
                 startInput(.native)
@@ -328,7 +338,7 @@ final class Navigator {
             return matches.first { $0.command == check.command }?.command ?? matches.first?.command
         }
         guard let playback = find(Self.autoscrollPlayback), let recording = find(Self.autoscrollRecording) else {
-            console("SpaceMouse: autoscroll actions not found among \(actions.count) actions; autoscroll handling is off\n")
+            report("autoscroll actions not found among \(actions.count) actions; autoscroll handling is off")
             return nil
         }
         return (playback, recording)
@@ -385,12 +395,28 @@ final class Navigator {
         return FileHandle(forWritingAtPath: path)
     }()
 
-    /// Writes to REAPER's console and, during development, to the log file.
+    /// Writes to REAPER's console (which opens it) and, during development, to the log file. Only for diagnostics
+    /// and the diagnostics action itself (ADR-0011).
     private func console(_ text: String) {
         api.showConsoleMessage(text)
+        writeLogFile(text)
+    }
+
+    private func writeLogFile(_ text: String) {
         guard let file = Self.logFile else { return }
         let stamp = String(format: "%.3f ", now)
         file.write(Data((stamp + text).utf8))
+    }
+
+    /// A message for the user: kept in `messages`, shown in the console only while diagnostics are on.
+    private func report(_ message: String) {
+        messages.append(Message(date: Date(), text: message))
+        if messages.count > Self.messageLimit { messages.removeFirst(messages.count - Self.messageLimit) }
+        if settings.diagnostics {
+            console("SpaceMouse: \(message)\n")
+        } else {
+            writeLogFile("SpaceMouse: \(message)\n")
+        }
     }
 
     private func log(_ message: String) {

@@ -14,3 +14,4 @@ Process: [ADR-0001](0001-record-architecture-decisions.md). Template: [template.
 | [0008](0008-register-with-3dxware-as-the-application.md) | Register with 3DxWare as the application, after REAPER has launched | accepted |
 | [0009](0009-distribute-as-a-per-user-installer-package.md) | Distribute as a signed, notarized per-user installer package | accepted |
 | [0010](0010-flash-the-led-to-confirm-the-autoscroll-button.md) | Write the SpaceMouse LED natively; flash it to confirm the autoscroll button | accepted |
+| [0011](0011-the-console-is-for-diagnostics-only.md) | Use REAPER's console for diagnostics only; keep user messages for a settings window | accepted |

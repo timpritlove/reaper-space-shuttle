@@ -53,3 +53,5 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   ausgeschaltet hat oder die Taste verlangt (ADR-0006).
 - LED: nativ Report 4, beim Treiber `'3dsl'` (wirkt bei der Compact nicht); jedes Muster endet mit LED an;
   LED-Fehler stoppen oder wechseln nie den Eingang (ADR-0010).
+- Konsole nur für Diagnose; Meldungen für Nutzer über `report` (landen in `messages` für ein Einstellungsfenster)
+  (ADR-0011).
