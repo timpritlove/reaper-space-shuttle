@@ -28,11 +28,67 @@ final class SettingsModel {
     var onSpeedChange: (_ position: Double, _ final: Bool) -> Void = { _, _ in }
 }
 
+/// The panes of the settings window, listed in its sidebar like System Settings (ADR-0012).
+enum SettingsPane: String, CaseIterable, Identifiable {
+    case general, speed, controls, messages
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .general: "General"
+        case .speed: "Speed"
+        case .controls: "Controls"
+        case .messages: "Messages"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .general: "gearshape.fill"
+        case .speed: "gauge.with.dots.needle.67percent"
+        case .controls: "rotate.3d"
+        case .messages: "text.bubble.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .general: .gray
+        case .speed: .blue
+        case .controls: .orange
+        case .messages: .green
+        }
+    }
+}
+
 struct SettingsView: View {
     @Bindable var model: SettingsModel
+    @State private var pane: SettingsPane? = .general
 
     var body: some View {
-        Form {
+        NavigationSplitView {
+            List(SettingsPane.allCases, selection: $pane) { pane in
+                Label {
+                    Text(pane.title)
+                } icon: {
+                    PaneIcon(pane: pane)
+                }
+            }
+            .navigationSplitViewColumnWidth(190)
+            .toolbar(removing: .sidebarToggle)
+        } detail: {
+            let pane = pane ?? .general
+            Form { content(pane) }
+                .formStyle(.grouped)
+                .navigationTitle(pane.title)
+        }
+        .frame(width: 700, height: 460)
+    }
+
+    @ViewBuilder private func content(_ pane: SettingsPane) -> some View {
+        switch pane {
+        case .general:
             Section("Input") {
                 LabeledContent("Mode", value: model.modeTitle)
                 LabeledContent("Status") { status }
@@ -40,7 +96,8 @@ struct SettingsView: View {
                     Text(model.modeDetail).font(.callout).foregroundStyle(.secondary)
                 }
             }
-            Section("Speed") {
+        case .speed:
+            Section {
                 Slider(value: speed, in: -1...1) {
                     Text("Speed")
                 } minimumValueLabel: {
@@ -59,16 +116,21 @@ struct SettingsView: View {
                     }
                     .disabled(model.speedPosition == 0)
                 }
+            } footer: {
+                Text("Sets how fast every movement of the cap is, at full deflection.")
+                    .font(.callout).foregroundStyle(.secondary)
             }
+        case .controls:
             if let controls = model.controls {
                 Section("Cap") { lines(controls.cap) }
                 Section("Buttons") { lines(controls.buttons) }
             }
-            Section("Messages") {
+        case .messages:
+            Section {
                 if model.messages.isEmpty {
                     Text("None").foregroundStyle(.secondary)
                 } else {
-                    ForEach(model.messages.suffix(20).reversed()) { message in
+                    ForEach(model.messages.suffix(50).reversed()) { message in
                         HStack(alignment: .firstTextBaseline) {
                             Text(message.date, style: .time).monospacedDigit().foregroundStyle(.secondary)
                             Text(message.text).textSelection(.enabled)
@@ -78,9 +140,6 @@ struct SettingsView: View {
                 }
             }
         }
-        .formStyle(.grouped)
-        .frame(width: 460)
-        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var speed: Binding<Double> {
@@ -109,6 +168,19 @@ struct SettingsView: View {
         ForEach(lines) { line in
             LabeledContent(line.control) { Text(line.function).multilineTextAlignment(.trailing) }
         }
+    }
+}
+
+/// A white symbol on a coloured rounded square, like the sidebar of System Settings.
+private struct PaneIcon: View {
+    let pane: SettingsPane
+
+    var body: some View {
+        Image(systemName: pane.symbol)
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 20, height: 20)
+            .background(pane.tint.gradient, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
     }
 }
 
@@ -160,9 +232,12 @@ final class SettingsWindowController {
     private func makeWindow() -> NSWindow {
         let controller = NSHostingController(rootView: SettingsView(model: model))
         controller.sizingOptions = .preferredContentSize
+        // The sidebar runs the full height under a unified toolbar that shows the pane's title, as in System Settings.
+        controller.sceneBridgingOptions = [.toolbars, .title]
         let window = EditKeysWindow(contentViewController: controller)
         window.title = "Space Shuttle"
-        window.styleMask = [.titled, .closable]
+        window.styleMask = [.titled, .closable, .fullSizeContentView]
+        window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false
         window.center()
         followSystemAppearance(window)

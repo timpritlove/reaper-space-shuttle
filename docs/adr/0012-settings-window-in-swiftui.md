@@ -27,6 +27,8 @@ its main thread with AppKit loaded. The spike of 2026-10-01 (docs/feasibility.md
 - Action "Space Shuttle: Settings…" opens one window (`SettingsWindowController`), SwiftUI in an
   `NSHostingController`, hosted by `EditKeysWindow`: Cmd-A/C/V/X/Z and Shift-Cmd-Z go to a focused text field,
   Cmd-W and Escape close the window. Closed on unload.
+- Layout like System Settings (Tim, 2026-10-01): a sidebar with one pane per group (General, Speed, Controls,
+  Messages; coloured symbol squares), the pane as a grouped form, its title in the unified toolbar.
 - Content: input mode (3DxWare driver or native) with a one-line explanation and the connection status; the speed
   slider; the cap and button assignments as the current settings define them (`ControlsDescription`, read-only); the
   last messages (ADR-0011).
@@ -58,5 +60,5 @@ its main thread with AppKit loaded. The spike of 2026-10-01 (docs/feasibility.md
   `ControlsDescription.swift`, `SpeedScaleTests`, `ControlsDescriptionTests`.
 - Keyboard behaviour: spike 2026-10-01 with synthesized key events (docs/feasibility.md).
 - Verified 2026-10-01 in the development REAPER (Tim): the window opens through the action; it follows Dark Mode.
-- Open checks: the window in REAPER (layout, slider feel, live speed change, value kept after restart); real
+- Open checks: the sidebar layout in REAPER (toolbar title, full-height sidebar, light and dark); the window in REAPER (layout, slider feel, live speed change, value kept after restart); real
   keystrokes once a text field exists.
