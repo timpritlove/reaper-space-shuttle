@@ -63,8 +63,8 @@ itself. Prior art searched 2026-10-01: nothing that connects a SpaceMouse to REA
 
 Everything is built and unit-tested. What only REAPER and the device can answer, in order:
 
-1. **Loading**: `make run` → development REAPER starts, console shows "SpaceMouse: diagnostics on, REAPER 7.81 …,
-   autoscroll actions found". Actions "SpaceMouse: …" appear in the action list.
+1. **Loading**: `make run` → development REAPER starts, console shows "Space Shuttle: diagnostics on, REAPER 7.81 …,
+   autoscroll actions found". Actions "Space Shuttle: …" appear in the action list.
 2. **Driver path** (3DxWare running): console "using 3DxWare driver", "connected: … client N". Move the cap with
    REAPER in front: axis events per second appear; view scrolls/zooms. Watch:
    - events per second while holding still (does the driver repeat unchanged states?) → ADR-0003 watchdog rule;
@@ -81,8 +81,8 @@ Everything is built and unit-tested. What only REAPER and the device can answer,
    set `input=native` or rely on the fallback; repeat 2–5. Input Monitoring prompt for REAPER?
 7. **Ultraschall**: copy the dylib into Ultraschall's `UserPlugins` only after 1–6 look good.
 
-Settings go into `.dev/reaper/reaper-extstate.ini`, section `[spacemouse]` (keys in `NavigationSettings`), then
-action "SpaceMouse: Reload settings".
+Settings go into `.dev/reaper/reaper-extstate.ini`, section `[spaceshuttle]` (keys in `NavigationSettings`), then
+action "Space Shuttle: Reload settings".
 
 ## Results
 

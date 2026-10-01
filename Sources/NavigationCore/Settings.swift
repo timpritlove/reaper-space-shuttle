@@ -1,6 +1,6 @@
 import Foundation
 
-/// Everything the user can tune. Read from REAPER's extension state (section `spacemouse`, file
+/// Everything the user can tune. Read from REAPER's extension state (section `spaceshuttle`, file
 /// `reaper-extstate.ini`); a missing or unreadable key keeps the default.
 public struct NavigationSettings: Sendable, Equatable {
     public enum InputChoice: String, Sendable {

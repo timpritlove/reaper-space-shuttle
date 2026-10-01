@@ -14,15 +14,15 @@ which installs and updates from within REAPER. Tim has a Developer ID Applicatio
 
 ## Decision
 
-- Releases are a standard macOS installer package, `dist/ReaperSpaceMouse-<version>.pkg`, built only by
+- Releases are a standard macOS installer package, `dist/SpaceShuttle-<version>.pkg`, built only by
   `Scripts/release.sh` (`make release`), which refuses uncommitted changes.
 - The package installs **for the current user only** (`enable_currentUserHome`), into
-  `~/Library/Application Support/REAPER/UserPlugins/reaper_spacemouse.dylib`; no choices, no scripts.
+  `~/Library/Application Support/REAPER/UserPlugins/reaper_spaceshuttle.dylib`; no choices, no scripts.
 - An installation check refuses while REAPER (bundle ID `com.cockos.reaper`, which Ultraschall shares) is running.
 - The dylib is universal (arm64 + x86_64, macOS 14+), signed with Developer ID Application, hardened runtime and a
   secure timestamp; the package is signed with Developer ID Installer, notarized and stapled.
 - Installer texts in German and English (`Packaging/Resources/<lang>.lproj`).
-- Version in `VERSION`; package identifier `me.metaebene.reaper-spacemouse`.
+- Version in `VERSION`; package identifier `me.metaebene.reaper-space-shuttle` (renamed by ADR-0013).
 - ReaPack is a later, additional channel (updates), not a replacement.
 
 ## Consequences

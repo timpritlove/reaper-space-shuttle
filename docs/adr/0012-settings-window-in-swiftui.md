@@ -24,7 +24,7 @@ its main thread with AppKit loaded. The spike of 2026-10-01 (docs/feasibility.md
 
 ## Decision
 
-- Action "SpaceMouse: Settings…" opens one window (`SettingsWindowController`), SwiftUI in an
+- Action "Space Shuttle: Settings…" opens one window (`SettingsWindowController`), SwiftUI in an
   `NSHostingController`, hosted by `EditKeysWindow`: Cmd-A/C/V/X/Z and Shift-Cmd-Z go to a focused text field,
   Cmd-W and Escape close the window. Closed on unload.
 - Content: input mode (3DxWare driver or native) with a one-line explanation and the connection status; the speed
@@ -50,11 +50,11 @@ its main thread with AppKit loaded. The spike of 2026-10-01 (docs/feasibility.md
 
 - Settings UI only in this window, never in the console.
 - Every window of the extension that can hold a text field uses `EditKeysWindow` (or the same key handling).
-- Every setting the window changes takes effect at once and is saved in the `spacemouse` extension state.
+- Every setting the window changes takes effect at once and is saved in the `spaceshuttle` extension state.
 
 ## Enforced and verified by
 
-- `SpaceMouseExtension/SettingsWindow.swift`, `Navigator` (settings window section), `NavigationCore/SpeedScale.swift`,
+- `SpaceShuttleExtension/SettingsWindow.swift`, `Navigator` (settings window section), `NavigationCore/SpeedScale.swift`,
   `ControlsDescription.swift`, `SpeedScaleTests`, `ControlsDescriptionTests`.
 - Keyboard behaviour: spike 2026-10-01 with synthesized key events (docs/feasibility.md).
 - Verified 2026-10-01 in the development REAPER (Tim): the window opens through the action; it follows Dark Mode.

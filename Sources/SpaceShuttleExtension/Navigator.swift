@@ -7,7 +7,9 @@ import SpaceMouseKit
 /// (ADR-0004 to ADR-0006). Everything runs on REAPER's main thread (ADR-0002).
 @MainActor
 final class Navigator {
-    static let settingsSection = "spacemouse"
+    static let settingsSection = "spaceshuttle"
+    /// The section before the rename to Space Shuttle (ADR-0013), read for keys the new section does not have yet.
+    static let legacySettingsSection = "spacemouse"
     /// "View: Toggle auto-view-scroll during playback" / "… while recording"; checked by name at start.
     static let autoscrollPlayback = (command: 40036, name: "auto-view-scroll during playback")
     static let autoscrollRecording = (command: 40262, name: "auto-view-scroll while recording")
@@ -18,6 +20,8 @@ final class Navigator {
     private(set) var settings: NavigationSettings
     private var input: SpaceMouseInput?
     private var enabled = true
+    /// Set by `hold`: no input until REAPER restarts.
+    private var held = false
     private var appActive = NSApplication.shared.isActive
 
     private var axes = SpaceMouseAxes.zero
@@ -70,8 +74,10 @@ final class Navigator {
     }
 
     private static func readSettings(_ api: ReaperAPI) -> NavigationSettings {
-        var settings = NavigationSettings { api.extState(section: settingsSection, key: $0) }
-        if ProcessInfo.processInfo.environment["SPACEMOUSE_DIAGNOSTICS"] == "1" { settings.diagnostics = true }
+        var settings = NavigationSettings {
+            api.extState(section: settingsSection, key: $0) ?? api.extState(section: legacySettingsSection, key: $0)
+        }
+        if ProcessInfo.processInfo.environment["SPACESHUTTLE_DIAGNOSTICS"] == "1" { settings.diagnostics = true }
         return settings
     }
 
@@ -83,6 +89,14 @@ final class Navigator {
         observeActivation()
         setDiagnostics(settings.diagnostics)
         startInput(settings.input)
+    }
+
+    /// Starts without input until REAPER restarts and tells the user why (ADR-0013).
+    func hold(because reason: String) {
+        held = true
+        setDiagnostics(settings.diagnostics)
+        refreshModel()
+        report(reason)
     }
 
     func stop() {
@@ -121,10 +135,11 @@ final class Navigator {
     func toggleDiagnostics() {
         settings.diagnostics.toggle()
         setDiagnostics(settings.diagnostics)
-        console("SpaceMouse: diagnostics \(settings.diagnostics ? "on" : "off")\n")
+        console("Space Shuttle: diagnostics \(settings.diagnostics ? "on" : "off")\n")
     }
 
     private func startInput(_ choice: NavigationSettings.InputChoice) {
+        guard !held else { return }
         let registration = DriverSpaceMouse.Registration(rawValue: settings.driverRegistration) ?? .application
         let input: SpaceMouseInput = switch choice {
         case .driver: DriverSpaceMouse(registration: registration)
@@ -428,9 +443,9 @@ final class Navigator {
 
     // MARK: - Diagnostics
 
-    /// Development log file (`SPACEMOUSE_LOG`, set by `make run`), so console output can be read outside REAPER.
+    /// Development log file (`SPACESHUTTLE_LOG`, set by `make run`), so console output can be read outside REAPER.
     private static let logFile: FileHandle? = {
-        guard let path = ProcessInfo.processInfo.environment["SPACEMOUSE_LOG"] else { return nil }
+        guard let path = ProcessInfo.processInfo.environment["SPACESHUTTLE_LOG"] else { return nil }
         FileManager.default.createFile(atPath: path, contents: nil)
         return FileHandle(forWritingAtPath: path)
     }()
@@ -454,15 +469,15 @@ final class Navigator {
         if messages.count > Self.messageLimit { messages.removeFirst(messages.count - Self.messageLimit) }
         model.messages = messages.map { SettingsModel.Message(date: $0.date, text: $0.text) }
         if settings.diagnostics {
-            console("SpaceMouse: \(message)\n")
+            console("Space Shuttle: \(message)\n")
         } else {
-            writeLogFile("SpaceMouse: \(message)\n")
+            writeLogFile("Space Shuttle: \(message)\n")
         }
     }
 
     private func log(_ message: String) {
         guard settings.diagnostics else { return }
-        console("SpaceMouse: \(message)\n")
+        console("Space Shuttle: \(message)\n")
     }
 
     private func setDiagnostics(_ on: Bool) {
@@ -473,7 +488,7 @@ final class Navigator {
         }
         let diagnostics = Diagnostics { [weak self] line in self?.console(line) }
         self.diagnostics = diagnostics
-        console("SpaceMouse: diagnostics on, REAPER \(api.appVersion), input \(settings.input.rawValue), "
+        console("Space Shuttle: diagnostics on, REAPER \(api.appVersion), input \(settings.input.rawValue), "
             + "autoscroll actions \(resolvedAutoscrollCommands == nil ? "not yet found" : "found")\n")
         diagnostics.start()
     }
@@ -512,7 +527,7 @@ private final class Diagnostics {
             peak = SpaceMouseAxes(x: max(peak.x, abs(axes.x)), y: max(peak.y, abs(axes.y)), z: max(peak.z, abs(axes.z)),
                                   rx: max(peak.rx, abs(axes.rx)), ry: max(peak.ry, abs(axes.ry)), rz: max(peak.rz, abs(axes.rz)))
         case .buttons(let buttons):
-            write("SpaceMouse: buttons 0x\(String(buttons.rawValue, radix: 16))\n")
+            write("Space Shuttle: buttons 0x\(String(buttons.rawValue, radix: 16))\n")
         default:
             break
         }
@@ -520,7 +535,7 @@ private final class Diagnostics {
 
     private func flush() {
         guard axisEvents > 0 || ticks > 0 else { return }
-        write("SpaceMouse: \(axisEvents) axis events/s (\(zeroEvents) zero), \(ticks) ticks, \(viewSets) view sets; "
+        write("Space Shuttle: \(axisEvents) axis events/s (\(zeroEvents) zero), \(ticks) ticks, \(viewSets) view sets; "
             + "last [\(last)] peak [\(peak)]\n")
         axisEvents = 0
         zeroEvents = 0

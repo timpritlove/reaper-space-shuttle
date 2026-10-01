@@ -112,7 +112,7 @@ struct SettingsView: View {
     }
 }
 
-/// Opens and closes the settings window (action "SpaceMouse: Settings…").
+/// Opens and closes the settings window (action "Space Shuttle: Settings…").
 @MainActor
 final class SettingsWindowController {
     private let model: SettingsModel
@@ -161,7 +161,7 @@ final class SettingsWindowController {
         let controller = NSHostingController(rootView: SettingsView(model: model))
         controller.sizingOptions = .preferredContentSize
         let window = EditKeysWindow(contentViewController: controller)
-        window.title = "SpaceMouse"
+        window.title = "Space Shuttle"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.center()

@@ -16,8 +16,8 @@ UI of our own, opened through a REAPER action.
 - Messages a user may want to see (input failures, fallback, missing autoscroll actions, settings reloaded,
   navigation on/off) go into `Navigator.messages` (the last 100, with date) — the source for the settings window to
   come. They reach the console only while diagnostics are on; during development they also go to the log file.
-- The console stays for diagnostics (setting `diagnostics`, `SPACEMOUSE_DIAGNOSTICS=1` from `make run`, or the
-  action "SpaceMouse: Toggle diagnostics in console", whose own on/off confirmation is written to the console).
+- The console stays for diagnostics (setting `diagnostics`, `SPACESHUTTLE_DIAGNOSTICS=1` from `make run`, or the
+  action "Space Shuttle: Toggle diagnostics in console", whose own on/off confirmation is written to the console).
 
 ## Consequences
 

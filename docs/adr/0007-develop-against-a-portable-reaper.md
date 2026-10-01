@@ -14,12 +14,12 @@ installation. The Show Notes project uses a portable REAPER for the same reason.
 - `Scripts/setup-dev-reaper.sh` downloads REAPER (default 7.81) into `.dev/reaper` (git-ignored) and makes it portable
   (`reaper.ini` next to the app); the license is symlinked, not copied.
 - `make install` installs into `.dev/reaper/UserPlugins`; `make run` installs, quits only the development instance
-  (by path) and starts it with `SPACEMOUSE_DIAGNOSTICS=1`.
+  (by path) and starts it with `SPACESHUTTLE_DIAGNOSTICS=1`.
 
 ## Consequences
 
 - The development REAPER has its own settings, actions and ext state; settings for the extension go into its
-  `reaper-extstate.ini`, section `[spacemouse]`.
+  `reaper-extstate.ini`, section `[spaceshuttle]`.
 - Trying the extension in Ultraschall is a deliberate, manual step.
 
 ## Rules

@@ -26,15 +26,15 @@
     }
     ]]>
     </script>
-    <pkg-ref id="me.metaebene.reaper-spacemouse"/>
+    <pkg-ref id="me.metaebene.reaper-space-shuttle"/>
     <choices-outline>
         <line choice="default">
-            <line choice="me.metaebene.reaper-spacemouse"/>
+            <line choice="me.metaebene.reaper-space-shuttle"/>
         </line>
     </choices-outline>
     <choice id="default"/>
-    <choice id="me.metaebene.reaper-spacemouse" visible="false">
-        <pkg-ref id="me.metaebene.reaper-spacemouse"/>
+    <choice id="me.metaebene.reaper-space-shuttle" visible="false">
+        <pkg-ref id="me.metaebene.reaper-space-shuttle"/>
     </choice>
-    <pkg-ref id="me.metaebene.reaper-spacemouse" version="VERSION" onConclusion="none">component.pkg</pkg-ref>
+    <pkg-ref id="me.metaebene.reaper-space-shuttle" version="VERSION" onConclusion="none">component.pkg</pkg-ref>
 </installer-gui-script>

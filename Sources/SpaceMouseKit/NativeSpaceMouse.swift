@@ -35,7 +35,7 @@ private final class HIDReader: @unchecked Sendable {
     /// Output report 4, one bit: the LED (`04 01` on, `04 00` off; measured in stagehand, 2026-09-26).
     static let ledReportID: UInt8 = 4
 
-    private let queue = DispatchQueue(label: "reaper-spacemouse.hid", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "space-shuttle.hid", qos: .userInteractive)
     private var onEvent: (@Sendable (SpaceMouseEvent) -> Void)?
 
     // Only touched on `queue`.

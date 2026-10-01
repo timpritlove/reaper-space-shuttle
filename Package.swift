@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "ReaperSpaceMouse",
+    name: "SpaceShuttle",
     platforms: [.macOS(.v14)],
     products: [
         // REAPER only loads extensions named reaper_*.dylib; Scripts/install-extension.sh renames lib*.dylib on install.
-        .library(name: "reaper_spacemouse", type: .dynamic, targets: ["SpaceMouseExtension"]),
+        .library(name: "reaper_spaceshuttle", type: .dynamic, targets: ["SpaceShuttleExtension"]),
     ],
     targets: [
         // C mirror of the few REAPER SDK structs we need (ADR-0002).
@@ -17,7 +17,7 @@ let package = Package(
         .target(name: "SpaceMouseKit"),
         // Pure navigation logic: shaping, arrange view motion, autoscroll guard, settings (ADR-0004 to ADR-0006).
         .target(name: "NavigationCore", dependencies: ["SpaceMouseKit"]),
-        .target(name: "SpaceMouseExtension", dependencies: ["ReaperBridge", "ReaperKit", "SpaceMouseKit", "NavigationCore"]),
+        .target(name: "SpaceShuttleExtension", dependencies: ["ReaperBridge", "ReaperKit", "SpaceMouseKit", "NavigationCore"]),
         .testTarget(name: "NavigationCoreTests", dependencies: ["NavigationCore", "SpaceMouseKit"]),
         .testTarget(name: "SpaceMouseKitTests", dependencies: ["SpaceMouseKit"]),
     ]

@@ -19,7 +19,7 @@ Ultraschall.app (REAPER 7.81) is signed with hardened runtime and `com.apple.sec
 ## Decision
 
 - The extension is written in modern Swift (Swift 6 language mode, strict concurrency), built with SwiftPM as the
-  dynamic library product `reaper_spacemouse`, installed as `reaper_spacemouse.dylib`.
+  dynamic library product `reaper_spaceshuttle`, installed as `reaper_spaceshuttle.dylib` (renamed by ADR-0013).
 - REAPER functions are bound in `ReaperKit` as `@convention(c)` types from `GetFunc`; the binding is `@MainActor`.
 - `ReaperBridge` is a C header mirroring `reaper_plugin_info_t` and `custom_action_register_t`; no WDL/SWELL headers.
   No control surface is needed so far (no C++ shim).
@@ -41,6 +41,6 @@ Ultraschall.app (REAPER 7.81) is signed with hardened runtime and `com.apple.sec
 
 ## Enforced and verified by
 
-- `ReaperKit/ReaperAPI.swift` (`@MainActor`), `SpaceMouseExtension/PluginEntry.swift`, `Scripts/install-extension.sh`.
+- `ReaperKit/ReaperAPI.swift` (`@MainActor`), `SpaceShuttleExtension/PluginEntry.swift`, `Scripts/install-extension.sh`.
 - Verified in Show Notes (REAPER 7.80). Open check here: loading in REAPER 7.81 (development REAPER) and in
   Ultraschall.

@@ -1,7 +1,7 @@
-# reaper-spacemouse – Hinweise für Claude Code
+# Space Shuttle (reaper-space-shuttle) – Hinweise für Claude Code
 
-Arbeitstitel. Native REAPER-Erweiterung (`reaper_spacemouse.dylib`, Swift 6, macOS), die REAPERs Arrange-Ansicht mit
-einer 3Dconnexion SpaceMouse stufenlos scrollt und zoomt: Auslenkung = Geschwindigkeit, solange die Kappe gehalten
+Space Shuttle (nach dem Jog Shuttle; ADR-0013). Native REAPER-Erweiterung (`reaper_spaceshuttle.dylib`, Swift 6,
+macOS), die REAPERs Arrange-Ansicht mit einer 3Dconnexion SpaceMouse stufenlos scrollt und zoomt: Auslenkung = Geschwindigkeit, solange die Kappe gehalten
 wird („unendliches Trackpad“). Zuerst Machbarkeit; **Übergabe und Testplan: `docs/feasibility.md` zuerst lesen.**
 Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (README/CLAUDE.md deutsch).
 
@@ -23,8 +23,8 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   `ArrangeMotion` (Geschwindigkeit → Ansicht, Anker, eigene Bruchteil-Ansicht), `StepAccumulator`,
   `AutoscrollGuard`, `LEDFlash`, `SpeedScale`, `ControlsDescription`, `NavigationSettings` (ADR-0004 bis 0006,
   0010, 0012).
-- `Sources/SpaceMouseExtension` – `PluginEntry` (Einstieg, Aktionen), `Navigator` (Takt, Ansicht, Autoscroll,
-  Diagnose in der REAPER-Konsole), `SettingsWindow` (SwiftUI-Fenster „SpaceMouse: Settings…“, ADR-0012).
+- `Sources/SpaceShuttleExtension` – `PluginEntry` (Einstieg, Aktionen), `Navigator` (Takt, Ansicht, Autoscroll,
+  Diagnose in der REAPER-Konsole), `SettingsWindow` (SwiftUI-Fenster „Space Shuttle: Settings…“, ADR-0012).
 - Verwandte Projekte: `~/src/timpritlove/reaper` (Show-Notes-Erweiterung, Swift-Muster), `~/src/timpritlove/stagehand`
   (`docs/spacemouse-findings.md`, `spacemouse-probe`), `~/src/timpritlove/spacer` (SpaceMouse-HID, Flugmodell).
 
@@ -32,11 +32,11 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 - `make build`, `make test` (swift-testing), `make install` (ins Entwicklungs-REAPER), `make run` (installieren,
   Entwicklungs-REAPER neu starten mit Diagnose in der Konsole), `make dev-reaper` (portables REAPER einrichten).
 - Nach jeder Code-Änderung, die der Nutzer ausprobieren soll: `make run`.
-- Release: `make release` (`Scripts/release.sh`) → signiertes, notarisiertes Paket `dist/ReaperSpaceMouse-<Version>.pkg`,
+- Release: `make release` (`Scripts/release.sh`) → signiertes, notarisiertes Paket `dist/SpaceShuttle-<Version>.pkg`,
   nur für den aktuellen Benutzer (ADR-0009); verweigert ungesicherte Änderungen, `VERSION` vorher erhöhen.
 - Nur das portable REAPER in `.dev/reaper` benutzen, nie Ultraschall oder `~/Library/Application Support/REAPER`
-  (ADR-0007). Einstellungen: `.dev/reaper/reaper-extstate.ini`, Abschnitt `[spacemouse]`, dann Aktion
-  „SpaceMouse: Reload settings“.
+  (ADR-0007). Einstellungen: `.dev/reaper/reaper-extstate.ini`, Abschnitt `[spaceshuttle]`, dann Aktion
+  „Space Shuttle: Reload settings“.
 - Tests am Gerät brauchen den Nutzer an der SpaceMouse; Ergebnisse in `docs/feasibility.md` („Results“) und in die
   betroffenen ADRs eintragen.
 
@@ -58,3 +58,6 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   (ADR-0011).
 - Einstellungen nur im SwiftUI-Fenster; Fenster mit Textfeldern über `EditKeysWindow` (sonst nimmt REAPERs Menü
   Cmd-A/C/V/Z, Cmd-Z macht das Projekt rückgängig); Änderungen wirken sofort und landen im Extension-State (ADR-0012).
+- Name: „SpaceMouse“ nur für das Gerät (`SpaceMouseKit` usw.), alles Produktseitige heißt Space Shuttle; eine
+  `reaper_spacemouse.dylib` daneben wandert beim Laden in den Papierkorb, dann ohne Eingang bis zum Neustart
+  (ADR-0013).

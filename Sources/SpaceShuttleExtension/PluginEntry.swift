@@ -23,11 +23,11 @@ public func ReaperPluginEntry(_ instance: UnsafeMutableRawPointer?, _ rec: Unsaf
             return 1
         } catch {
             // Say why instead of vanishing silently: REAPER unloads a library whose entry returns 0.
-            let message = "SpaceMouse extension not loaded: \(error)\n"
+            let message = "Space Shuttle extension not loaded: \(error)\n"
             if let show = getFunc("ShowConsoleMsg") {
                 unsafeBitCast(show, to: (@convention(c) (UnsafePointer<CChar>?) -> Void).self)(message)
             }
-            if let path = ProcessInfo.processInfo.environment["SPACEMOUSE_LOG"] {
+            if let path = ProcessInfo.processInfo.environment["SPACESHUTTLE_LOG"] {
                 try? message.write(toFile: path, atomically: true, encoding: .utf8)
             }
             return 0
@@ -41,17 +41,17 @@ final class Extension {
 
     /// Entries in the action list (main section).
     enum Action: String, CaseIterable {
-        case toggleNavigation = "SPACEMOUSE_TOGGLE"
-        case toggleDiagnostics = "SPACEMOUSE_DIAGNOSTICS"
-        case reloadSettings = "SPACEMOUSE_RELOAD"
-        case settings = "SPACEMOUSE_SETTINGS"
+        case toggleNavigation = "SPACESHUTTLE_TOGGLE"
+        case toggleDiagnostics = "SPACESHUTTLE_DIAGNOSTICS"
+        case reloadSettings = "SPACESHUTTLE_RELOAD"
+        case settings = "SPACESHUTTLE_SETTINGS"
 
         var title: String {
             switch self {
-            case .toggleNavigation: "SpaceMouse: Toggle navigation"
-            case .toggleDiagnostics: "SpaceMouse: Toggle diagnostics in console"
-            case .reloadSettings: "SpaceMouse: Reload settings"
-            case .settings: "SpaceMouse: Settings…"
+            case .toggleNavigation: "Space Shuttle: Toggle navigation"
+            case .toggleDiagnostics: "Space Shuttle: Toggle diagnostics in console"
+            case .reloadSettings: "Space Shuttle: Reload settings"
+            case .settings: "Space Shuttle: Settings…"
             }
         }
     }
@@ -79,7 +79,34 @@ final class Extension {
             if id != 0 { commandIDs[id] = action }
         }
         _ = register("hookcommand2", unsafeBitCast(actionHook, to: UnsafeMutableRawPointer.self))
-        navigator.start()
+        if let predecessor = Self.predecessor() {
+            navigator.hold(because: Self.retire(predecessor))
+        } else {
+            navigator.start()
+        }
+    }
+
+    /// The extension's file before the rename to Space Shuttle (ADR-0013). If REAPER loaded it too, both would read
+    /// the SpaceMouse and move the view twice.
+    static let predecessorFile = "reaper_spacemouse.dylib"
+
+    /// The predecessor next to this library, if there is one.
+    private static func predecessor() -> URL? {
+        var info = Dl_info()
+        guard dladdr(#dsohandle, &info) != 0, let path = info.dli_fname else { return nil }
+        let url = URL(fileURLWithPath: String(cString: path)).deletingLastPathComponent()
+            .appendingPathComponent(predecessorFile)
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
+
+    /// Moves the predecessor to the Trash (REAPER keeps its loaded copy until it quits) and says what happened.
+    private static func retire(_ predecessor: URL) -> String {
+        do {
+            try FileManager.default.trashItem(at: predecessor, resultingItemURL: nil)
+            return "moved the old \(predecessorFile) to the Trash; Space Shuttle takes over after REAPER restarts"
+        } catch {
+            return "found the old \(predecessor.path); delete it and restart REAPER (\(error.localizedDescription))"
+        }
     }
 
     func unload() {
