@@ -3,6 +3,9 @@
      ~/Library/Application Support/REAPER/UserPlugins. VERSION is replaced by Scripts/release.sh. -->
 <installer-gui-script minSpecVersion="2">
     <title>TITLE</title>
+    <!-- The icon in the lower left of the installer window (ADR-0016), made by Scripts/make-icon.sh. -->
+    <background file="background.tiff" alignment="bottomleft" scaling="none"/>
+    <background-darkAqua file="background-dark.tiff" alignment="bottomleft" scaling="none"/>
     <welcome file="welcome.html" mime-type="text/html"/>
     <conclusion file="conclusion.html" mime-type="text/html"/>
     <options customize="never" require-scripts="false" hostArchitectures="arm64,x86_64"/>

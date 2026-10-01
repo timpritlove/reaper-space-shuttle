@@ -32,6 +32,8 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 - `make build`, `make test` (swift-testing), `make install` (ins Entwicklungs-REAPER), `make run` (installieren,
   Entwicklungs-REAPER neu starten mit Diagnose in der Konsole), `make dev-reaper` (portables REAPER einrichten).
 - Nach jeder Code-Änderung, die der Nutzer ausprobieren soll: `make run`.
+- Icon: `make icon` (`Scripts/make-icon.sh`) zeichnet `Packaging/AppIcon.icon` neu und rendert die Installer-Bilder
+  und `docs/icon.png`; Motiv nur in `Scripts/make-icon-layers.swift` ändern (ADR-0016).
 - Release: `make release` (`Scripts/release.sh`) → signiertes, notarisiertes Paket `dist/SpaceShuttle-<Version>.pkg`,
   nur für den aktuellen Benutzer (ADR-0009); verweigert ungesicherte Änderungen, `VERSION` vorher erhöhen.
 - Nur das portable REAPER in `.dev/reaper` benutzen, nie Ultraschall oder `~/Library/Application Support/REAPER`

@@ -1,5 +1,5 @@
 # Thin layer over Scripts/; logic belongs in the scripts.
-.PHONY: build test install run quit dev-reaper release clean
+.PHONY: build test install run quit dev-reaper release icon clean
 
 build:
 	swift build
@@ -21,6 +21,9 @@ dev-reaper:
 
 release:
 	Scripts/release.sh
+
+icon:
+	Scripts/make-icon.sh
 
 clean:
 	rm -rf .build
