@@ -60,9 +60,13 @@ final class Navigator {
     private var observers: [NSObjectProtocol] = []
     private var diagnostics: Diagnostics?
 
+    /// What the settings window shows (ADR-0012).
+    let model = SettingsModel()
+
     init(api: ReaperAPI) {
         self.api = api
         settings = Self.readSettings(api)
+        model.onSpeedChange = { [weak self] position, final in self?.setSpeed(position: position, persist: final) }
     }
 
     private static func readSettings(_ api: ReaperAPI) -> NavigationSettings {
@@ -104,6 +108,7 @@ final class Navigator {
             input = nil
             startInput(settings.input)
         }
+        refreshModel()
         report("settings reloaded")
     }
 
@@ -127,6 +132,8 @@ final class Navigator {
         case .automatic: DriverSpaceMouse.isInstalled ? DriverSpaceMouse(registration: registration) : NativeSpaceMouse()
         }
         self.input = input
+        model.connection = .starting
+        refreshModel()
         log("using \(input.name)")
         input.setActive(appActive)
         input.start { [weak self, weak input] event in
@@ -155,18 +162,51 @@ final class Navigator {
         }
     }
 
+    // MARK: - Settings window (ADR-0012)
+
+    private func refreshModel() {
+        switch input {
+        case is DriverSpaceMouse:
+            model.modeTitle = "3DxWare driver"
+            model.modeDetail = "Through 3Dconnexion's driver. Leave the speed in the 3DxWare settings in its middle "
+                + "position and set it here."
+        case is NativeSpaceMouse:
+            model.modeTitle = "Native"
+            model.modeDetail = "Read directly, without 3Dconnexion's driver. While REAPER runs, other apps cannot use "
+                + "the SpaceMouse."
+        default:
+            model.modeTitle = "None"
+            model.modeDetail = ""
+        }
+        model.speedPosition = SpeedScale.position(for: settings.speed)
+        model.controls = ControlsDescription(settings: settings, ledFeedback: input is NativeSpaceMouse) { [api] in
+            api.actionName($0)
+        }
+    }
+
+    /// Takes effect at once; saved when the slider is let go.
+    private func setSpeed(position: Double, persist: Bool) {
+        settings.speed = SpeedScale.speed(at: position)
+        guard persist else { return }
+        api.setExtState(section: Self.settingsSection, key: "speed", value: String(format: "%.3f", settings.speed))
+        log("speed \(String(format: "%.3f", settings.speed))")
+    }
+
     // MARK: - Input
 
     private func handle(_ event: SpaceMouseEvent, from input: SpaceMouseInput, choice: NavigationSettings.InputChoice) {
         diagnostics?.note(event)
         switch event {
         case .connected(let what):
+            model.connection = .connected
             log("connected: \(what)")
         case .disconnected:
+            model.connection = .disconnected
             log("disconnected")
             axes = .zero
             releaseAutoscroll()
         case .failed(let reason):
+            model.connection = .failed(reason)
             report("\(input.name): \(reason)")
             if choice == .automatic, input is DriverSpaceMouse {
                 report("falling back to native HID")
@@ -412,6 +452,7 @@ final class Navigator {
     private func report(_ message: String) {
         messages.append(Message(date: Date(), text: message))
         if messages.count > Self.messageLimit { messages.removeFirst(messages.count - Self.messageLimit) }
+        model.messages = messages.map { SettingsModel.Message(date: $0.date, text: $0.text) }
         if settings.diagnostics {
             console("SpaceMouse: \(message)\n")
         } else {

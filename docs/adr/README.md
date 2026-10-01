@@ -15,3 +15,4 @@ Process: [ADR-0001](0001-record-architecture-decisions.md). Template: [template.
 | [0009](0009-distribute-as-a-per-user-installer-package.md) | Distribute as a signed, notarized per-user installer package | accepted |
 | [0010](0010-flash-the-led-to-confirm-the-autoscroll-button.md) | Write the SpaceMouse LED natively; flash it to confirm the autoscroll button | accepted |
 | [0011](0011-the-console-is-for-diagnostics-only.md) | Use REAPER's console for diagnostics only; keep user messages for a settings window | accepted |
+| [0012](0012-settings-window-in-swiftui.md) | A settings window in SwiftUI inside the extension, with a window class for edit keys | accepted |

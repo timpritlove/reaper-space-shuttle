@@ -157,6 +157,33 @@ action "SpaceMouse: Reload settings".
   that the driver ignores it on the Compact. Writing report 4 past the helper fails (`kIOReturnNotOpen` without an
   open, `kIOReturnExclusiveAccess` with a shared one), so the LED is native only.
 - Native path: built, not yet seen at the device.
+- Native path at the device (helper stopped, `input=auto` fell back to native): works (Tim).
+
+### 2026-10-01, keyboard in an extension's own window: Cocoa vs. SWELL
+
+Spike `reaper_uitest.dylib` (ObjC++, not in the repository): text field windows in the development REAPER, keys
+sent through `[NSApp sendEvent:]` (the path real key events take), REAPER's play state and project state change
+count watched, every `accelerator` hook call logged.
+
+- Plain keys (letters, space, backspace, arrows, tab) reach the text field in **every** variant, Cocoa and SWELL, with
+  or without hook; space does not start playback, letters trigger no actions. REAPER recognises a focused text view
+  itself.
+- The hook sees identical messages for both (`WM_KEYDOWN`/`WM_KEYUP`, hwnd = the field editor `NSTextView`).
+  Returning -1 changes nothing; -10 ("raw") makes it worse (Cmd-A then goes to REAPER from SWELL too). A hook that
+  performs the edit command itself and returns 1 did not stop the Cmd keys either.
+- **Cmd keys** are the difference:
+  - plain Cocoa window: Cmd-A and Cmd-Z (and Cmd-V) go to REAPER's menu (project state changes: select all, project
+    undo), not to the field;
+  - SWELL edit field: Cmd-A, Cmd-C, Cmd-V work in the field, but **Cmd-Z undoes the REAPER project**;
+  - Cocoa window subclass overriding `performKeyEquivalent:` to send `selectAll:`/`copy:`/`paste:`/`cut:`/`undo:`/
+    `redo:` to the first responder when a text view has focus: all of them work in the field, including field undo,
+    and REAPER's project stays untouched.
+- Conclusion: a Cocoa (SwiftUI) window with that window subclass handles the keyboard better than SWELL.
+- SwiftUI `TextField` in the real settings window (`EditKeysWindow` + `NSHostingController`, temporary spike code):
+  the first responder is SwiftUI's own field editor (`_SystemTextFieldFieldEditor`, an `NSText`); with the window
+  class every edit key worked and the project stayed untouched in 4 of 6 runs. In the two failed runs the Cmd keys
+  reached REAPER; the runs after adding logging showed REAPER active with our window key every time, so the failures
+  were most likely runs where REAPER was not frontmost (no key window). Open: real keystrokes (ADR-0012).
 
 ## Later
 

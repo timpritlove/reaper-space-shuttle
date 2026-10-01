@@ -21,9 +21,10 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   `NativeSpaceMouse` (HID, exklusiv, aus Spacer portiert) hinter `SpaceMouseInput` (ADR-0003).
 - `Sources/NavigationCore` – reine Rechnung, getestet: `AxisShaping` (Totzone, Kennlinie, Übersprechen),
   `ArrangeMotion` (Geschwindigkeit → Ansicht, Anker, eigene Bruchteil-Ansicht), `StepAccumulator`,
-  `AutoscrollGuard`, `LEDFlash`, `NavigationSettings` (ADR-0004 bis 0006, 0010).
+  `AutoscrollGuard`, `LEDFlash`, `SpeedScale`, `ControlsDescription`, `NavigationSettings` (ADR-0004 bis 0006,
+  0010, 0012).
 - `Sources/SpaceMouseExtension` – `PluginEntry` (Einstieg, Aktionen), `Navigator` (Takt, Ansicht, Autoscroll,
-  Diagnose in der REAPER-Konsole).
+  Diagnose in der REAPER-Konsole), `SettingsWindow` (SwiftUI-Fenster „SpaceMouse: Settings…“, ADR-0012).
 - Verwandte Projekte: `~/src/timpritlove/reaper` (Show-Notes-Erweiterung, Swift-Muster), `~/src/timpritlove/stagehand`
   (`docs/spacemouse-findings.md`, `spacemouse-probe`), `~/src/timpritlove/spacer` (SpaceMouse-HID, Flugmodell).
 
@@ -55,3 +56,5 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
   LED-Fehler stoppen oder wechseln nie den Eingang (ADR-0010).
 - Konsole nur für Diagnose; Meldungen für Nutzer über `report` (landen in `messages` für ein Einstellungsfenster)
   (ADR-0011).
+- Einstellungen nur im SwiftUI-Fenster; Fenster mit Textfeldern über `EditKeysWindow` (sonst nimmt REAPERs Menü
+  Cmd-A/C/V/Z, Cmd-Z macht das Projekt rückgängig); Änderungen wirken sofort und landen im Extension-State (ADR-0012).

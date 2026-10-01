@@ -443,3 +443,48 @@ struct LEDFlashTests {
         #expect(LEDFlash.steps(count: 0).isEmpty)
     }
 }
+
+struct SpeedScaleTests {
+    @Test func middleIsNormal() {
+        #expect(SpeedScale.speed(at: 0) == 1)
+        #expect(SpeedScale.position(for: 1) == 0)
+    }
+
+    @Test func endsSpanTheSameFactor() {
+        #expect(abs(SpeedScale.speed(at: 1) - 4) < 1e-9)
+        #expect(abs(SpeedScale.speed(at: -1) - 0.25) < 1e-9)
+    }
+
+    @Test func roundTripsAndClamps() {
+        #expect(abs(SpeedScale.position(for: SpeedScale.speed(at: 0.3)) - 0.3) < 1e-9)
+        #expect(SpeedScale.position(for: 10) == 1)
+        #expect(SpeedScale.position(for: 0) == -1)
+    }
+
+    @Test func snapsToTheMiddle() {
+        #expect(SpeedScale.snapped(0.02) == 0)
+        #expect(SpeedScale.snapped(-0.03) == 0)
+        #expect(SpeedScale.snapped(0.2) == 0.2)
+    }
+}
+
+struct ControlsDescriptionTests {
+    @Test func describesTheDefaults() {
+        let description = ControlsDescription(settings: NavigationSettings(), ledFeedback: true) {
+            $0 == 40295 ? "View: Zoom out project" : nil
+        }
+        #expect(description.cap.map(\.function) == ["Scroll the timeline", "Zoom the timeline", "Scroll the track list"])
+        #expect(description.cap.first?.control == "Slide left/right or twist")
+        #expect(description.buttons.map(\.control) == ["Left button", "Right button held + twist",
+                                                       "Right button click", "Right button double click"])
+        #expect(description.buttons[0].function.contains("LED"))
+        #expect(description.buttons[2].function == "Nothing")
+        #expect(description.buttons[3].function == "View: Zoom out project")
+    }
+
+    @Test func noLEDWithoutFeedback() {
+        let description = ControlsDescription(settings: NavigationSettings(), ledFeedback: false) { _ in nil }
+        #expect(description.buttons[0].function == "Autoscroll on/off")
+        #expect(description.buttons[3].function == "Action 40295")
+    }
+}

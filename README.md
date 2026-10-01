@@ -13,6 +13,9 @@ sie hält: ein Trackpad ohne Rand.
 | linke Taste | Autoscroll ein/aus (beim Steuern ohnehin kurz aus, danach gleitet die Ansicht zum Playhead zurück) |
 | rechte Taste doppelt klicken | Projekt einpassen (einstellbar) |
 
+Einstellungen (Geschwindigkeit, Modus, Belegung, Meldungen): Aktion „SpaceMouse: Settings…“. Mit dem 3DxWare-Treiber
+dessen Geschwindigkeitsregler in der Mitte lassen.
+
 Stand: Machbarkeitsprüfung, siehe [docs/feasibility.md](docs/feasibility.md) und die
 [Architekturentscheidungen](docs/adr/README.md).
 

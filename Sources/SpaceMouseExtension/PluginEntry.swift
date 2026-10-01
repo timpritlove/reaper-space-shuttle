@@ -44,12 +44,14 @@ final class Extension {
         case toggleNavigation = "SPACEMOUSE_TOGGLE"
         case toggleDiagnostics = "SPACEMOUSE_DIAGNOSTICS"
         case reloadSettings = "SPACEMOUSE_RELOAD"
+        case settings = "SPACEMOUSE_SETTINGS"
 
         var title: String {
             switch self {
             case .toggleNavigation: "SpaceMouse: Toggle navigation"
             case .toggleDiagnostics: "SpaceMouse: Toggle diagnostics in console"
             case .reloadSettings: "SpaceMouse: Reload settings"
+            case .settings: "SpaceMouse: Settings…"
             }
         }
     }
@@ -57,12 +59,14 @@ final class Extension {
     let api: ReaperAPI
     private let register: (String, UnsafeMutableRawPointer?) -> Int32
     private let navigator: Navigator
+    private let settingsWindow: SettingsWindowController
     private var commandIDs: [Int32: Action] = [:]
 
     init(api: ReaperAPI, register: @escaping (String, UnsafeMutableRawPointer?) -> Int32) {
         self.api = api
         self.register = register
         navigator = Navigator(api: api)
+        settingsWindow = SettingsWindowController(model: navigator.model)
     }
 
     func load() {
@@ -79,6 +83,7 @@ final class Extension {
     }
 
     func unload() {
+        settingsWindow.close()
         navigator.stop()
         _ = register("-hookcommand2", unsafeBitCast(actionHook, to: UnsafeMutableRawPointer.self))
     }
@@ -89,6 +94,7 @@ final class Extension {
         case .toggleNavigation: navigator.toggleEnabled()
         case .toggleDiagnostics: navigator.toggleDiagnostics()
         case .reloadSettings: navigator.reloadSettings()
+        case .settings: settingsWindow.show()
         }
         return true
     }
