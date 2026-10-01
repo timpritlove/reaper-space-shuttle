@@ -4,8 +4,9 @@ import IOKit.hid
 /// The SpaceMouse Compact read directly over HID, without the 3Dconnexion driver (ADR-0003). Ported from Spacer's
 /// `SpaceMouseHID`, which follows stagehand's rules: match vendor and product ID exactly, open seized (a shared open
 /// turns the cap into scroll events), keep the report buffer alive until the device's cancel handler ran. Writes only
-/// the LED's output report (ADR-0010). Fails with `kIOReturnExclusiveAccess` while the 3Dconnexion helper holds the
-/// device.
+/// the LED's output report (ADR-0010). Holds the device only while `setActive(true)`, so another program's native
+/// input can have it in between (`SeizeClaim`). Fails with `kIOReturnExclusiveAccess` while the 3Dconnexion helper holds
+/// the device.
 @MainActor
 public final class NativeSpaceMouse: SpaceMouseInput {
     public let name = "native HID"
@@ -20,8 +21,8 @@ public final class NativeSpaceMouse: SpaceMouseInput {
         reader.start { event in onMain { onEvent(event) } }
     }
 
-    /// The device stays seized while REAPER is in the background; the navigator ignores its data then.
-    public func setActive(_ active: Bool) {}
+    /// Seizes the device while active and lets go of it otherwise (`SeizeClaim`).
+    public func setActive(_ active: Bool) { reader.setActive(active) }
 
     public func setLED(_ on: Bool) { reader.setLED(on) }
 
@@ -40,8 +41,11 @@ private final class HIDReader: @unchecked Sendable {
 
     // Only touched on `queue`.
     private var manager: IOHIDManager?
+    private var claim = SeizeClaim()
+    /// The manager's device object while the SpaceMouse is connected, open or not.
+    private var present: IOHIDDevice?
+    /// Our own device object, only while open.
     private var device: IOHIDDevice?
-    private var registryID: UInt64?
     private var reports: ReportBuffer?
     private var ledFailed = false
 
@@ -52,9 +56,15 @@ private final class HIDReader: @unchecked Sendable {
         }
     }
 
+    func setActive(_ active: Bool) {
+        queue.async { self.perform(self.claim.want(active)) }
+    }
+
     func stop() {
         queue.sync {
             closeDevice()
+            present = nil
+            claim = SeizeClaim()
             if let manager {
                 IOHIDManagerCancel(manager)
                 self.manager = nil
@@ -99,16 +109,37 @@ private final class HIDReader: @unchecked Sendable {
     }
 
     private func deviceAppeared(_ managed: IOHIDDevice) {
-        guard device == nil else { return }
+        guard present == nil else { return }
+        present = managed
+        perform(claim.deviceAppeared())
+    }
+
+    private func deviceVanished(_ managed: IOHIDDevice) {
+        guard let present, Self.registryID(of: managed) == Self.registryID(of: present) else { return }
+        closeDevice()
+        self.present = nil
+        claim.deviceVanished()
+        onEvent?(.disconnected)
+    }
+
+    private func perform(_ action: SeizeClaim.Action) {
+        switch action {
+        case .none: break
+        case .open: openDevice()
+        case .close:
+            closeDevice()
+            claim.closed()
+        }
+    }
+
+    private func openDevice() {
+        guard device == nil, let present else { return }
         // Do not configure the manager's own device object; open a separate one by registry ID.
-        let service = IOHIDDeviceGetService(managed)
-        var id: UInt64 = 0
-        guard IORegistryEntryGetRegistryEntryID(service, &id) == KERN_SUCCESS else { return }
+        guard let id = Self.registryID(of: present) else { return openFailed(kIOReturnNotFound, "device not reachable") }
         let own = IOServiceGetMatchingService(kIOMainPortDefault, IORegistryEntryIDMatching(id))
         guard own != 0, let device = IOHIDDeviceCreate(kCFAllocatorDefault, own) else {
             if own != 0 { IOObjectRelease(own) }
-            onEvent?(.failed("device not reachable"))
-            return
+            return openFailed(kIOReturnNotFound, "device not reachable")
         }
         IOObjectRelease(own)
 
@@ -125,23 +156,24 @@ private final class HIDReader: @unchecked Sendable {
         guard result == kIOReturnSuccess else {
             IOHIDDeviceSetCancelHandler(device) { withExtendedLifetime((device, reports)) {} }
             IOHIDDeviceCancel(device)
-            onEvent?(.failed(Self.describe(result)))
-            return
+            return openFailed(result, Self.describe(result))
         }
         IOHIDDeviceActivate(device)
         self.device = device
         self.reports = reports
-        self.registryID = id
         ledFailed = false
+        claim.opened()
         onEvent?(.connected("native HID, SpaceMouse Compact"))
     }
 
-    private func deviceVanished(_ managed: IOHIDDevice) {
-        var id: UInt64 = 0
-        IORegistryEntryGetRegistryEntryID(IOHIDDeviceGetService(managed), &id)
-        guard id == registryID else { return }
-        closeDevice()
-        onEvent?(.disconnected)
+    /// Busy (another program still holds the device) is retried for a while; everything else is reported at once.
+    private func openFailed(_ result: IOReturn, _ reason: String) {
+        switch claim.openFailed(busy: result == kIOReturnExclusiveAccess) {
+        case .retry(let seconds, let generation):
+            queue.asyncAfter(deadline: .now() + seconds) { self.perform(self.claim.retry(generation: generation)) }
+        case .giveUp:
+            onEvent?(.failed(reason))
+        }
     }
 
     private func closeDevice() {
@@ -151,7 +183,11 @@ private final class HIDReader: @unchecked Sendable {
         IOHIDDeviceCancel(device)
         self.device = nil
         self.reports = nil
-        self.registryID = nil
+    }
+
+    private static func registryID(of device: IOHIDDevice) -> UInt64? {
+        var id: UInt64 = 0
+        return IORegistryEntryGetRegistryEntryID(IOHIDDeviceGetService(device), &id) == KERN_SUCCESS ? id : nil
     }
 
     private static func describe(_ result: IOReturn) -> String {

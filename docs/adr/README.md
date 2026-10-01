@@ -6,7 +6,7 @@ Process: [ADR-0001](0001-record-architecture-decisions.md). Template: [template.
 |---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | accepted |
 | [0002](0002-swift-extension-on-reapers-main-thread.md) | Build a native REAPER extension in Swift and call REAPER only on its main thread | accepted |
-| [0003](0003-spacemouse-input-driver-first-native-fallback.md) | Read the SpaceMouse through the 3DxWare client API first, natively over HID as fallback | accepted, registration superseded by 0008, write rule by 0010 |
+| [0003](0003-spacemouse-input-driver-first-native-fallback.md) | Read the SpaceMouse through the 3DxWare client API first, natively over HID as fallback | accepted, registration superseded by 0008, write rule by 0010, native hold by 0015 |
 | [0004](0004-rate-control-of-the-arrange-view.md) | Drive the arrange view by rate control through GetSet_ArrangeView2 | accepted |
 | [0005](0005-axis-mapping-and-shaping.md) | Map four cap movements to scroll and zoom, shaped by dead zone, curve and crosstalk suppression | accepted, twist moved to the play cursor by 0014 |
 | [0006](0006-autoscroll-yields-to-the-spacemouse.md) | Suspend autoscroll while the SpaceMouse moves the view; the left button toggles it | accepted |
@@ -18,3 +18,4 @@ Process: [ADR-0001](0001-record-architecture-decisions.md). Template: [template.
 | [0012](0012-settings-window-in-swiftui.md) | A settings window in SwiftUI inside the extension, with a window class for edit keys | accepted |
 | [0013](0013-name-the-extension-space-shuttle.md) | Name the extension Space Shuttle and retire reaper_spacemouse.dylib | accepted |
 | [0014](0014-twist-moves-the-play-cursor.md) | Twist moves the play cursor by rate control, never while recording | accepted |
+| [0015](0015-seize-the-device-natively-only-while-reaper-is-active.md) | Seize the device natively only while REAPER is active, so other programs can have it meanwhile | accepted |

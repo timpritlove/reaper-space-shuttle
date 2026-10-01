@@ -185,6 +185,14 @@ count watched, every `accelerator` hook call logged.
   reached REAPER; the runs after adding logging showed REAPER active with our window key every time, so the failures
   were most likely runs where REAPER was not frontmost (no key window). Open: real keystrokes (ADR-0012).
 
+### 2026-10-01, native side by side with SpaceScroll (ADR-0015)
+
+- Helper stopped, `input` auto (fell back to native: `-36`, then "connected: native HID, SpaceMouse Compact"),
+  SpaceScroll (`~/src/timpritlove/spacescroll`) running natively at the same time.
+- Tim: both work — Space Shuttle navigates while REAPER is in front, SpaceScroll scrolls the other apps.
+- Not checked in detail: Cmd-Tab with the cap deflected, "device busy", stray scrolling while switching, the LED after
+  a reopen.
+
 ## Later
 
 - Coexistence with stagehand (both want the device; with the driver path both could be clients).

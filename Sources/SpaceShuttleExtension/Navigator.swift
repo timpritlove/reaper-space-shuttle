@@ -189,8 +189,8 @@ final class Navigator {
                 + "position and set it here."
         case is NativeSpaceMouse:
             model.modeTitle = "Native"
-            model.modeDetail = "Read directly, without 3Dconnexion's driver. While REAPER runs, other apps cannot use "
-                + "the SpaceMouse."
+            model.modeDetail = "Read directly, without 3Dconnexion's driver. Held only while REAPER is in front; other "
+                + "apps can use the SpaceMouse meanwhile."
         default:
             model.modeTitle = "None"
             model.modeDetail = ""
