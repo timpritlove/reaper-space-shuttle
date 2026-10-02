@@ -69,11 +69,14 @@ struct SettingsView: View {
     var body: some View {
         NavigationSplitView {
             List(SettingsPane.allCases, selection: $pane) { pane in
-                Label {
-                    Text(pane.title)
-                } icon: {
+                // Spacing as in System Settings: 32 pt rows, 7 pt between icon and title. REAPER is linked against
+                // an old SDK, so the list draws compact rows and a tight Label unless we lay the row out ourselves.
+                HStack(spacing: 7) {
                     PaneIcon(pane: pane)
+                    Text(pane.title)
                 }
+                .padding(.leading, 3)
+                .frame(height: 24)
             }
             .navigationSplitViewColumnWidth(190)
             .toolbar(removing: .sidebarToggle)
@@ -177,7 +180,7 @@ private struct PaneIcon: View {
 
     var body: some View {
         Image(systemName: pane.symbol)
-            .font(.system(size: 11, weight: .semibold))
+            .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: 20, height: 20)
             .background(pane.tint.gradient, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
