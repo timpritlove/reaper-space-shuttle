@@ -1,6 +1,6 @@
 # ADR-0017: Take the SpaceMouse through Space Juggler
 
-- Status: accepted (2026-10-14, built; checks at the device open); supersedes ADR-0003 (driver first, native fallback;
+- Status: accepted (2026-10-14; checked at the device with all four apps, with and without 3DxWare); supersedes ADR-0003 (driver first, native fallback;
   the driver case goes to Space Juggler, spacemousekit ADR-0004), ADR-0015 and ADR-0008's registration (no own
   registration any more), and the input setting
 - Date: 2026-10-14
@@ -46,6 +46,7 @@
 - At the device with all four apps (Tim, 2026-10-14, spacemousekit `docs/spike.md` run 4): each app gets the
   SpaceMouse while in front, Stagehand otherwise; Kugelblitz kept it in the background ahead of Stagehand. The open
   checks below are what that run did not single out.
+- Through 3DxWare 10.8.13 (helper running) with all four apps, each in front (Tim, 2026-10-14, run 6).
 - Open checks in REAPER: scroll and zoom with the SpaceNavigator and the SpaceMouse Pro (MENU = autoscroll, FIT =
   start/stop); Kugelblitz or Stagehand get the device when REAPER is in the background; LED pattern; the release
   package installs both files and leaves other apps' Space Juggler alone.
