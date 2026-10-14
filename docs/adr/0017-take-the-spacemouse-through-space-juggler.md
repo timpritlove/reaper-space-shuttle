@@ -43,6 +43,9 @@
   `dladdr`), `Navigator.handle` (`heldTwoButtons`: the Pro's MENU and FIT as left and right), `setLEDs` for the LED
   pattern; `Scripts/space-juggler.sh`, `install-extension.sh`, `release.sh` (bundle not relocatable).
 - `swift test` (63 tests) after removing the own `SpaceMouseKit` copy, `SeizeClaim` and the input setting.
+- At the device with all four apps (Tim, 2026-10-14, spacemousekit `docs/spike.md` run 4): each app gets the
+  SpaceMouse while in front, Stagehand otherwise; Kugelblitz kept it in the background ahead of Stagehand. The open
+  checks below are what that run did not single out.
 - Open checks in REAPER: scroll and zoom with the SpaceNavigator and the SpaceMouse Pro (MENU = autoscroll, FIT =
   start/stop); Kugelblitz or Stagehand get the device when REAPER is in the background; LED pattern; the release
   package installs both files and leaves other apps' Space Juggler alone.
