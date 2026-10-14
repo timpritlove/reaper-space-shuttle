@@ -14,4 +14,8 @@ mkdir -p "$TARGET_DIR"
 # signature in memory and can crash REAPER; a rename leaves the loaded file intact until REAPER restarts.
 cp "$(swift build -c "$CONFIGURATION" --show-bin-path)/libreaper_spaceshuttle.dylib" "$TARGET_DIR/reaper_spaceshuttle.dylib.new"
 mv -f "$TARGET_DIR/reaper_spaceshuttle.dylib.new" "$TARGET_DIR/reaper_spaceshuttle.dylib"
-echo "Installed to $TARGET_DIR/reaper_spaceshuttle.dylib"
+# Space Juggler.app next to the extension; the extension starts it from there (ADR-0017). Replaced as a whole.
+JUGGLER="$(Scripts/space-juggler.sh "$CONFIGURATION" "$ROOT/.build/space-juggler")"
+rm -rf "$TARGET_DIR/Space Juggler.app"
+cp -R "$JUGGLER" "$TARGET_DIR/"
+echo "Installed to $TARGET_DIR/reaper_spaceshuttle.dylib and $TARGET_DIR/Space Juggler.app"

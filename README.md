@@ -17,8 +17,11 @@ Trackpad ohne Rand, oder eben ein Jog Shuttle im Raum.
 | rechte Taste klicken | Start/Stop (einstellbar) |
 | rechte Taste doppelt klicken | Projekt einpassen (einstellbar) |
 
-Einstellungen (Geschwindigkeit, Modus, Belegung, Meldungen): Aktion „Space Shuttle: Settings…“. Mit dem 3DxWare-Treiber
-dessen Geschwindigkeitsregler in der Mitte lassen.
+Einstellungen (Geschwindigkeit, Belegung, Meldungen): Aktion „Space Shuttle: Settings…“.
+
+Die SpaceMouse kommt über Space Juggler (liegt neben der Erweiterung, startet von selbst), der sie mit anderen Apps
+teilt: Space Shuttle bekommt sie, solange REAPER vorn ist. Unterstützt werden alle Modelle von Space Juggler
+(SpaceMouse Compact, Pro, Wireless, SpaceNavigator); bei der Pro sind MENU und FIT die linke und rechte Taste.
 
 Stand: Machbarkeitsprüfung, siehe [docs/feasibility.md](docs/feasibility.md) und die
 [Architekturentscheidungen](docs/adr/README.md).
@@ -26,7 +29,8 @@ Stand: Machbarkeitsprüfung, siehe [docs/feasibility.md](docs/feasibility.md) un
 ## Installieren
 
 `SpaceShuttle-<Version>.pkg` öffnen (vorher REAPER beenden). Das Paket legt die Erweiterung nur für dich nach
-`~/Library/Application Support/REAPER/UserPlugins/reaper_spaceshuttle.dylib`. Entfernen: diese Datei löschen.
+`~/Library/Application Support/REAPER/UserPlugins/reaper_spaceshuttle.dylib`, daneben `Space Juggler.app`. Entfernen:
+beides löschen.
 
 Update von 0.1/0.2 (damals `reaper_spacemouse.dylib`): Beim ersten Start legt Space Shuttle die alte Datei in den
 Papierkorb und übernimmt nach einem Neustart von REAPER, mit den bisherigen Einstellungen. Tastenkürzel auf den alten
@@ -40,4 +44,4 @@ make run         # bauen, ins portable Entwicklungs-REAPER (.dev/reaper) install
 make release     # signiertes, notarisiertes Installationspaket in dist/ (ADR-0009)
 ```
 
-Voraussetzungen: Xcode 27 / Swift 6.2 oder neuer; für den Treiberweg 3DxWare von 3Dconnexion.
+Voraussetzungen: Xcode 27 / Swift 6.2 oder neuer; `~/src/timpritlove/spacemousekit` daneben ausgecheckt.

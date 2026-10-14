@@ -1,6 +1,6 @@
 # ADR-0015: Seize the device natively only while REAPER is active, so other programs can have it meanwhile
 
-- Status: accepted
+- Status: superseded by ADR-0017 (Space Juggler)
 - Date: 2026-10-01
 - Supersedes: in ADR-0003 the native input holding the device for as long as the extension runs
 

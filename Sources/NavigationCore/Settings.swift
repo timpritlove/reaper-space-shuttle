@@ -3,13 +3,6 @@ import Foundation
 /// Everything the user can tune. Read from REAPER's extension state (section `spaceshuttle`, file
 /// `reaper-extstate.ini`); a missing or unreadable key keeps the default.
 public struct NavigationSettings: Sendable, Equatable {
-    public enum InputChoice: String, Sendable {
-        /// 3DxWare driver if its framework is installed, otherwise native HID (ADR-0003).
-        case automatic = "auto"
-        case driver
-        case native
-    }
-
     public enum ZoomAnchor: String, Sendable {
         /// Play position while playing and visible, else the edit cursor if visible, else the middle of the view.
         case automatic = "auto"
@@ -18,10 +11,7 @@ public struct NavigationSettings: Sendable, Equatable {
         case playPosition = "play"
     }
 
-    public var input = InputChoice.automatic
-    /// How to register with the 3DxWare driver: `app` (as the frontmost application) or `manual` (ADR-0003).
-    public var driverRegistration = "app"
-    /// Value of a fully deflected axis; the driver scales its values, so this may need tuning there.
+    /// Value of a fully deflected axis (the device's ±350; Space Juggler decides how the SpaceMouse is read, ADR-0017).
     public var fullScale = 350.0
     public var shaping = AxisShaping()
     /// Overall speed factor for every movement (Tim, 2026-10-01): 1 is the baseline, which feels like the 3DxWare
@@ -68,8 +58,6 @@ public struct NavigationSettings: Sendable, Equatable {
         func number(_ key: String) -> Double? { lookup(key).flatMap { Double($0.trimmingCharacters(in: .whitespaces)) } }
         func flag(_ key: String) -> Bool? { number(key).map { $0 != 0 } }
 
-        if let value = lookup("input").flatMap(InputChoice.init(rawValue:)) { input = value }
-        if let value = lookup("driver_registration"), ["app", "manual"].contains(value) { driverRegistration = value }
         if let value = number("full_scale"), value > 0 { fullScale = value }
         if let value = number("deadzone"), (0..<1).contains(value) { shaping.deadzone = value }
         if let value = number("exponent"), value > 0 { shaping.exponent = value }

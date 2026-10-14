@@ -231,10 +231,9 @@ struct SettingsTests {
     }
 
     @Test func readsKnownKeysAndIgnoresNonsense() {
-        let values = ["input": "native", "scroll_speed": "3", "deadzone": "2", "tick_rate": "30",
+        let values = ["scroll_speed": "3", "deadzone": "2", "tick_rate": "30",
                       "zoom_axis": "y", "zoom_invert": "1", "zoom_anchor": "edit", "diagnostics": "1"]
         let settings = NavigationSettings { values[$0] }
-        #expect(settings.input == .native)
         #expect(settings.scrollSpeed == 3)
         #expect(settings.shaping.deadzone == AxisShaping().deadzone)
         #expect(settings.tickRate == 30)

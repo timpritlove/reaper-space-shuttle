@@ -36,9 +36,18 @@ echo "== Signing the extension"
 codesign --force --timestamp --options runtime --sign "$APP_IDENTITY" "$BUILD/root/reaper_spaceshuttle.dylib"
 codesign --verify --strict "$BUILD/root/reaper_spaceshuttle.dylib"
 
+echo "== Space Juggler"
+# Next to the extension, which starts it from there (ADR-0017): universal, Developer ID, secure timestamp.
+JUGGLER="$(UNIVERSAL=1 TIMESTAMP=1 SIGN_IDENTITY="$APP_IDENTITY" Scripts/space-juggler.sh release "$BUILD/juggler")"
+cp -R "$JUGGLER" "$BUILD/root/"
+
 echo "== Package"
+# Every app that uses Space Juggler carries a copy with the same bundle ID: the installer must never "relocate" ours
+# onto another app's copy, so the bundle is marked not relocatable.
+pkgbuild --analyze --root "$BUILD/root" "$BUILD/components.plist" >/dev/null
+plutil -replace 0.BundleIsRelocatable -bool NO "$BUILD/components.plist"
 # With the currentUserHome domain the install location is relative to the user's home folder.
-pkgbuild --root "$BUILD/root" --identifier "$IDENTIFIER" --version "$VERSION" \
+pkgbuild --root "$BUILD/root" --component-plist "$BUILD/components.plist" --identifier "$IDENTIFIER" --version "$VERSION" \
   --install-location "/Library/Application Support/REAPER/UserPlugins" "$BUILD/component.pkg" >/dev/null
 sed "s/VERSION/$VERSION/" Packaging/distribution.xml > "$BUILD/distribution.xml"
 productbuild --distribution "$BUILD/distribution.xml" --resources Packaging/Resources \

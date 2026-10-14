@@ -16,9 +16,9 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 ## Aufbau
 - `Sources/ReaperBridge` – C-Spiegel von `reaper_plugin_info_t` und `custom_action_register_t`.
 - `Sources/ReaperKit` – `ReaperAPI`, getypte REAPER-Funktionen über `GetFunc`, `@MainActor` (ADR-0002).
-- `Sources/SpaceMouseKit` – Werte (`SpaceMouseAxes`, Reports, `ConnexionDeviceState`), Eingänge
-  `DriverSpaceMouse` (3DxWare-Client-API, manueller Client `'++++'`, aktiv nur solange REAPER vorn ist) und
-  `NativeSpaceMouse` (HID, exklusiv, aus Spacer portiert) hinter `SpaceMouseInput` (ADR-0003).
+- SpaceMouse: Paket `spacemousekit` (`~/src/timpritlove/spacemousekit`, vorerst als Pfad-Abhängigkeit): Werte aus
+  `SpaceMouseKit`, Eingabe über Space Juggler (`SpaceJugglerConnection`, Anspruch = REAPERs Bundle-ID; ADR-0017).
+  `Space Juggler.app` liegt neben der Erweiterung in `UserPlugins` (`Scripts/space-juggler.sh`, Installation, Paket).
 - `Sources/NavigationCore` – reine Rechnung, getestet: `AxisShaping` (Totzone, Kennlinie, Übersprechen),
   `ArrangeMotion` (Geschwindigkeit → Ansicht, Anker, eigene Bruchteil-Ansicht), `StepAccumulator`,
   `PlayheadMotion`, `AutoscrollGuard`, `LEDFlash`, `SpeedScale`, `ControlsDescription`, `NavigationSettings` (ADR-0004 bis 0006,
@@ -45,18 +45,18 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 ## Regeln (Kurzfassung; Begründung in den ADRs)
 - REAPER-API nur auf dem Main Thread; Signaturen exakt nach `reaper_plugin_functions.h`; geladene dylib nie
   überschreiben, nur kopieren + umbenennen (ADR-0002).
-- 3DxWare-Helper, stagehand und Spacer nie beenden, um an das Gerät zu kommen. Nativ: Vendor- **und** Product-ID,
-  nur exklusiv öffnen, nur verstandene Output-Reports schreiben (LED = Report 4), nie Vendor-Feature-Reports (ADR-0010). Stille vom Treiber nicht als Loslassen deuten, bis gemessen (ADR-0003).
-- Treiber: als Anwendung anmelden (`'****'` + Programmname), nie in `ReaperPluginEntry`, erst nach dem Start; die
-  manuelle Anmeldung nur als Einstellung. Der Helper 1.4.2 stürzte bei Anmeldung während des Starts ab (ADR-0008).
+- Die SpaceMouse nie selbst öffnen: nur Space Juggler hält sie und gibt sie REAPER, solange es vorn ist (ADR-0017).
+  Nichts davon in `ReaperPluginEntry`. Den 3DxWare-Treiber behandelt Space Juggler (spacemousekit ADR-0004).
+- Im Paket für die Verteilung ist `Space Juggler.app` nicht verschiebbar (`BundleIsRelocatable` aus), sonst legte der
+  Installer sie auf die Kopie einer anderen App.
 - Bewegung nach vergangener Zeit, nie pro Takt oder Report; horizontal nur über `GetSet_ArrangeView2`; kein Takt ohne
   Bewegung (ADR-0004).
 - Drehung bewegt den Abspielcursor (Geschwindigkeit wie beim Scrollen), nie während einer Aufnahme; Scrollen und Drehen schließen einander aus (ADR-0014).
 - Vorzeichen und Belegung nur in `AxisMapping`/Einstellungen; Tempo folgt immer der Auslenkung (ADR-0005).
 - Autoscroll nur über die Aktionen 40036/40262 (Name beim Start geprüft), nur zurückschalten, was der Guard selbst
   ausgeschaltet hat oder die Taste verlangt (ADR-0006).
-- LED: nativ Report 4, beim Treiber `'3dsl'` (wirkt bei der Compact nicht); jedes Muster endet mit LED an;
-  LED-Fehler stoppen oder wechseln nie den Eingang (ADR-0010).
+- LED: über Space Juggler (`setLEDs`, Report 4); jedes Muster endet mit LED an; LED-Fehler stoppen nie die Eingabe
+  (ADR-0010).
 - Konsole nur für Diagnose; Meldungen für Nutzer über `report` (landen in `messages` für ein Einstellungsfenster)
   (ADR-0011).
 - Einstellungen nur im SwiftUI-Fenster; Fenster mit Textfeldern über `EditKeysWindow` (sonst nimmt REAPERs Menü

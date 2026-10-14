@@ -1,7 +1,7 @@
 import AppKit
 import NavigationCore
 import ReaperKit
-import SpaceMouseKit
+import SpaceJugglerClient
 
 /// Drives REAPER's arrange view from the SpaceMouse: deflection → velocity → view, integrated per tick
 /// (ADR-0004 to ADR-0006). Everything runs on REAPER's main thread (ADR-0002).
@@ -18,7 +18,8 @@ final class Navigator {
 
     private let api: ReaperAPI
     private(set) var settings: NavigationSettings
-    private var input: SpaceMouseInput?
+    /// The SpaceMouse through Space Juggler (ADR-0017).
+    private var connection: SpaceJugglerConnection?
     private var enabled = true
     /// Set by `hold`: no input until REAPER restarts.
     private var held = false
@@ -90,7 +91,7 @@ final class Navigator {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in _ = self?.autoscrollCommands }
         observeActivation()
         setDiagnostics(settings.diagnostics)
-        startInput(settings.input)
+        startInput()
     }
 
     /// Starts without input until REAPER restarts and tells the user why (ADR-0013).
@@ -106,24 +107,18 @@ final class Navigator {
         stopTicking()
         if ledPattern > 0 {
             ledPattern += 1
-            input?.setLED(true)
+            connection?.setLEDs(true)
         }
-        input?.stop()
-        input = nil
+        connection?.stop()
+        connection = nil
         diagnostics = nil
         for observer in observers { NotificationCenter.default.removeObserver(observer) }
         observers = []
     }
 
     func reloadSettings() {
-        let previousInput = settings.input
         settings = Self.readSettings(api)
         setDiagnostics(settings.diagnostics)
-        if settings.input != previousInput {
-            input?.stop()
-            input = nil
-            startInput(settings.input)
-        }
         refreshModel()
         report("settings reloaded")
     }
@@ -140,23 +135,30 @@ final class Navigator {
         console("Space Shuttle: diagnostics \(settings.diagnostics ? "on" : "off")\n")
     }
 
-    private func startInput(_ choice: NavigationSettings.InputChoice) {
+    /// Claims the SpaceMouse for REAPER (whose process this is) from Space Juggler, which lies next to the extension
+    /// (ADR-0017). Space Juggler gives it while REAPER is in front.
+    private func startInput() {
         guard !held else { return }
-        let registration = DriverSpaceMouse.Registration(rawValue: settings.driverRegistration) ?? .application
-        let input: SpaceMouseInput = switch choice {
-        case .driver: DriverSpaceMouse(registration: registration)
-        case .native: NativeSpaceMouse()
-        case .automatic: DriverSpaceMouse.isInstalled ? DriverSpaceMouse(registration: registration) : NativeSpaceMouse()
-        }
-        self.input = input
+        let connection = SpaceJugglerConnection(
+            name: "Space Shuttle", claim: Claim(apps: [Bundle.main.bundleIdentifier ?? "com.cockos.reaper"]),
+            launcher: .app(Self.extensionDirectory.appendingPathComponent("\(SpaceJuggler.appName).app")))
+        self.connection = connection
         model.connection = .starting
         refreshModel()
-        log("using \(input.name)")
-        input.setActive(appActive)
-        input.start { [weak self, weak input] event in
-            guard let self, let input, input === self.input else { return }
-            self.handle(event, from: input, choice: choice)
+        connection.onEvent = { [weak self, weak connection] event in
+            guard let self, let connection, connection === self.connection else { return }
+            self.handle(event, from: connection)
         }
+        connection.start()
+    }
+
+    /// The folder this extension was loaded from (UserPlugins), where the installer puts Space Juggler.app.
+    private static var extensionDirectory: URL {
+        var info = Dl_info()
+        guard dladdr(#dsohandle, &info) != 0, let path = info.dli_fname else {
+            return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/REAPER/UserPlugins")
+        }
+        return URL(fileURLWithPath: String(cString: path)).deletingLastPathComponent()
     }
 
     private func observeActivation() {
@@ -172,7 +174,6 @@ final class Navigator {
     private func setAppActive(_ active: Bool) {
         appActive = active
         log(active ? "REAPER active" : "REAPER in background")
-        input?.setActive(active)
         if !active {
             axes = .zero
             releaseAutoscroll()
@@ -182,21 +183,11 @@ final class Navigator {
     // MARK: - Settings window (ADR-0012)
 
     private func refreshModel() {
-        switch input {
-        case is DriverSpaceMouse:
-            model.modeTitle = "3DxWare driver"
-            model.modeDetail = "Through 3Dconnexion's driver. Leave the speed in the 3DxWare settings in its middle "
-                + "position and set it here."
-        case is NativeSpaceMouse:
-            model.modeTitle = "Native"
-            model.modeDetail = "Read directly, without 3Dconnexion's driver. Held only while REAPER is in front; other "
-                + "apps can use the SpaceMouse meanwhile."
-        default:
-            model.modeTitle = "None"
-            model.modeDetail = ""
-        }
+        model.modeTitle = connection == nil ? "None" : "Space Juggler"
+        model.modeDetail = connection == nil ? "" : "Through Space Juggler, which shares the SpaceMouse with other apps: "
+            + "Space Shuttle gets it while REAPER is in front."
         model.speedPosition = SpeedScale.position(for: settings.speed)
-        model.controls = ControlsDescription(settings: settings, ledFeedback: input is NativeSpaceMouse) { [api] in
+        model.controls = ControlsDescription(settings: settings, ledFeedback: connection != nil) { [api] in
             api.actionName($0)
         }
     }
@@ -211,31 +202,31 @@ final class Navigator {
 
     // MARK: - Input
 
-    private func handle(_ event: SpaceMouseEvent, from input: SpaceMouseInput, choice: NavigationSettings.InputChoice) {
+    private func handle(_ event: SpaceJugglerConnection.Event, from connection: SpaceJugglerConnection) {
         diagnostics?.note(event)
         switch event {
-        case .connected(let what):
-            model.connection = .connected
-            log("connected: \(what)")
+        case .connected(let version):
+            log("connected to Space Juggler \(version)")
         case .disconnected:
-            model.connection = .disconnected
-            log("disconnected")
+            model.connection = .starting
+            log("Space Juggler gone; reconnecting")
             axes = .zero
             releaseAutoscroll()
-        case .failed(let reason):
+        case .unavailable(let reason):
             model.connection = .failed(reason)
-            report("\(input.name): \(reason)")
-            if choice == .automatic, input is DriverSpaceMouse {
-                report("falling back to native HID")
-                input.stop()
-                self.input = nil
-                startInput(.native)
-            }
-        case .axes(let value):
+            report(reason)
+        case .devices(let devices):
+            model.connection = devices.isEmpty ? .disconnected : .connected
+            log("devices: \(devices.map { "\($0.name) (\($0.state))" }.joined(separator: ", "))")
+        case .holding(let holds):
+            log(holds ? "holds the SpaceMouse" : "SpaceMouse with another app")
+        case .axes(let value, _):
             axes = value
             axesTime = now
             if !value.isZero { startTicking() }
-        case .buttons(let value):
+        case .buttons:
+            // Left and right: the Compact's two, the Pro's MENU and FIT.
+            let value = connection.heldTwoButtons
             let pressed = SpaceMouseButtons(rawValue: value.rawValue & ~buttons.rawValue)
             let released = SpaceMouseButtons(rawValue: buttons.rawValue & ~value.rawValue)
             buttons = value
@@ -291,7 +282,8 @@ final class Navigator {
 
         var effective = axes
         if !enabled || !appActive { effective = .zero }
-        if let input, input.streamsWhileDeflected, time - axesTime > Self.staleAfter { effective = .zero }
+        // Space Juggler passes the device's reports on, ~60 Hz while deflected: silence means released.
+        if connection != nil, time - axesTime > Self.staleAfter { effective = .zero }
 
         let shaped = settings.shaping.shaped(effective, fullScale: settings.fullScale)
         let mapping = rightButton.isHeld ? settings.mapping.whileHeld : settings.mapping
@@ -454,13 +446,13 @@ final class Navigator {
 
     /// Confirms the button at the device (ADR-0010): one flash for on, two for off.
     private func flashLED(autoscrollOn: Bool) {
-        guard let input else { return }
+        guard let connection else { return }
         ledPattern += 1
         let pattern = ledPattern
         for step in LEDFlash.autoscroll(on: autoscrollOn) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + step.delay) { [weak self, weak input] in
-                guard let self, let input, input === self.input, pattern == self.ledPattern else { return }
-                input.setLED(step.on)
+            DispatchQueue.main.asyncAfter(deadline: .now() + step.delay) { [weak self, weak connection] in
+                guard let self, let connection, connection === self.connection, pattern == self.ledPattern else { return }
+                connection.setLEDs(step.on)
             }
         }
     }
@@ -518,7 +510,7 @@ final class Navigator {
         }
         let diagnostics = Diagnostics { [weak self] line in self?.console(line) }
         self.diagnostics = diagnostics
-        console("Space Shuttle: diagnostics on, REAPER \(api.appVersion), input \(settings.input.rawValue), "
+        console("Space Shuttle: diagnostics on, REAPER \(api.appVersion), input Space Juggler, "
             + "autoscroll actions \(resolvedAutoscrollCommands == nil ? "not yet found" : "found")\n")
         diagnostics.start()
     }
@@ -549,16 +541,16 @@ private final class Diagnostics {
         timer.resume()
     }
 
-    func note(_ event: SpaceMouseEvent) {
+    func note(_ event: SpaceJugglerConnection.Event) {
         switch event {
-        case .axes(let axes):
+        case .axes(let axes, _):
             axisEvents += 1
             if axes.isZero { zeroEvents += 1 }
             last = axes
             peak = SpaceMouseAxes(x: max(peak.x, abs(axes.x)), y: max(peak.y, abs(axes.y)), z: max(peak.z, abs(axes.z)),
                                   rx: max(peak.rx, abs(axes.rx)), ry: max(peak.ry, abs(axes.ry)), rz: max(peak.rz, abs(axes.rz)))
-        case .buttons(let buttons):
-            write("Space Shuttle: buttons 0x\(String(buttons.rawValue, radix: 16))\n")
+        case .buttons(let buttons, let device):
+            write("Space Shuttle: buttons 0x\(String(buttons.rawValue, radix: 16)) on \(device)\n")
         default:
             break
         }

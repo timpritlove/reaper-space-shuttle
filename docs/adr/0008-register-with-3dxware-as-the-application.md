@@ -1,6 +1,6 @@
 # ADR-0008: Register with 3DxWare as the application, after REAPER has launched
 
-- Status: accepted
+- Status: superseded by ADR-0017 (no own driver registration)
 - Date: 2026-10-01
 - Supersedes: the driver registration in ADR-0003 (manual client as default)
 

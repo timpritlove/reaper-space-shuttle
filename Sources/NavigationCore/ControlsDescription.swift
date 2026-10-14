@@ -13,7 +13,7 @@ public struct ControlsDescription: Sendable, Equatable {
 
     /// - Parameters:
     ///   - actionName: REAPER's name for an action ID, nil if unknown.
-    ///   - ledFeedback: whether the input can flash the LED (native only, ADR-0010).
+    ///   - ledFeedback: whether the LED can flash (through Space Juggler, ADR-0010, ADR-0017).
     public init(settings: NavigationSettings, ledFeedback: Bool, actionName: (Int) -> String?) {
         let mapping = settings.mapping
         cap = AxisMapping.Role.allCases.compactMap { role in

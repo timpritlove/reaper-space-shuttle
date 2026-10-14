@@ -1,7 +1,8 @@
 # ADR-0017: Take the SpaceMouse through Space Juggler
 
-- Status: proposed (2026-10-14); takes effect when Space Shuttle moves to Space Juggler (spacemousekit `docs/plan.md`,
-  step 6, the first client); then supersedes the native input of ADR-0003 and ADR-0015
+- Status: accepted (2026-10-14, built; checks at the device open); supersedes ADR-0003 (driver first, native fallback;
+  the driver case goes to Space Juggler, spacemousekit ADR-0004), ADR-0015 and ADR-0008's registration (no own
+  registration any more), and the input setting
 - Date: 2026-10-14
 - Related: spacemousekit ADR-0001 … 0004 (`~/src/timpritlove/spacemousekit`)
 
@@ -38,5 +39,10 @@
 
 ## Enforced and verified by
 
-To be written when built. Checks then in REAPER: scroll and zoom with a Compact and a SpaceMouse Pro; Kugelblitz or
-Stagehand get the device when REAPER is in the background.
+- `Navigator.startInput` (claim = REAPER's bundle ID, launcher = `Space Juggler.app` next to the dylib, found with
+  `dladdr`), `Navigator.handle` (`heldTwoButtons`: the Pro's MENU and FIT as left and right), `setLEDs` for the LED
+  pattern; `Scripts/space-juggler.sh`, `install-extension.sh`, `release.sh` (bundle not relocatable).
+- `swift test` (63 tests) after removing the own `SpaceMouseKit` copy, `SeizeClaim` and the input setting.
+- Open checks in REAPER: scroll and zoom with the SpaceNavigator and the SpaceMouse Pro (MENU = autoscroll, FIT =
+  start/stop); Kugelblitz or Stagehand get the device when REAPER is in the background; LED pattern; the release
+  package installs both files and leaves other apps' Space Juggler alone.
