@@ -15,7 +15,7 @@ mkdir -p "$TARGET_DIR"
 cp "$(swift build -c "$CONFIGURATION" --show-bin-path)/libreaper_spaceshuttle.dylib" "$TARGET_DIR/reaper_spaceshuttle.dylib.new"
 mv -f "$TARGET_DIR/reaper_spaceshuttle.dylib.new" "$TARGET_DIR/reaper_spaceshuttle.dylib"
 # Space Juggler.app next to the extension; the extension starts it from there (ADR-0017). Replaced as a whole.
-JUGGLER="$(Scripts/space-juggler.sh "$CONFIGURATION" "$ROOT/.build/space-juggler")"
+JUGGLER="$(SIGN_IDENTITY="${SIGN_IDENTITY:-Apple Development: Tim Francis Pritlove (3YZVY5N3EZ)}" Scripts/space-juggler.sh "$CONFIGURATION" "$ROOT/.build/space-juggler")"
 rm -rf "$TARGET_DIR/Space Juggler.app"
 cp -R "$JUGGLER" "$TARGET_DIR/"
 echo "Installed to $TARGET_DIR/reaper_spaceshuttle.dylib and $TARGET_DIR/Space Juggler.app"

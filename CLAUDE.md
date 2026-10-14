@@ -16,7 +16,7 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 ## Aufbau
 - `Sources/ReaperBridge` – C-Spiegel von `reaper_plugin_info_t` und `custom_action_register_t`.
 - `Sources/ReaperKit` – `ReaperAPI`, getypte REAPER-Funktionen über `GetFunc`, `@MainActor` (ADR-0002).
-- SpaceMouse: Paket `spacemousekit` (`~/src/timpritlove/spacemousekit`, vorerst als Pfad-Abhängigkeit): Werte aus
+- SpaceMouse: Paket `space-juggler` (`github.com/timpritlove/space-juggler`, Git-Abhängigkeit mit Versions-Tag; zum Entwickeln `swift package edit` oder lokaler Override): Werte aus
   `SpaceMouseKit`, Eingabe über Space Juggler (`SpaceJugglerConnection`, Anspruch = REAPERs Bundle-ID; ADR-0017).
   `Space Juggler.app` liegt neben der Erweiterung in `UserPlugins` (`Scripts/space-juggler.sh`, Installation, Paket).
 - `Sources/NavigationCore` – reine Rechnung, getestet: `AxisShaping` (Totzone, Kennlinie, Übersprechen),
@@ -46,7 +46,7 @@ Sprache mit dem Nutzer: Deutsch. Code, Kommentare, ADRs und Docs auf Englisch (R
 - REAPER-API nur auf dem Main Thread; Signaturen exakt nach `reaper_plugin_functions.h`; geladene dylib nie
   überschreiben, nur kopieren + umbenennen (ADR-0002).
 - Die SpaceMouse nie selbst öffnen: nur Space Juggler hält sie und gibt sie REAPER, solange es vorn ist (ADR-0017).
-  Nichts davon in `ReaperPluginEntry`. Den 3DxWare-Treiber behandelt Space Juggler (spacemousekit ADR-0004).
+  Nichts davon in `ReaperPluginEntry`. Den 3DxWare-Treiber behandelt Space Juggler (space-juggler ADR-0004).
 - Im Paket für die Verteilung ist `Space Juggler.app` nicht verschiebbar (`BundleIsRelocatable` aus), sonst legte der
   Installer sie auf die Kopie einer anderen App.
 - Bewegung nach vergangener Zeit, nie pro Takt oder Report; horizontal nur über `GetSet_ArrangeView2`; kein Takt ohne
