@@ -20,3 +20,4 @@ Process: [ADR-0001](0001-record-architecture-decisions.md). Template: [template.
 | [0014](0014-twist-moves-the-play-cursor.md) | Twist moves the play cursor by rate control, never while recording | accepted |
 | [0015](0015-seize-the-device-natively-only-while-reaper-is-active.md) | Seize the device natively only while REAPER is active, so other programs can have it meanwhile | accepted |
 | [0016](0016-a-liquid-glass-icon-for-the-installer.md) | A Liquid Glass icon made in Icon Composer format, shown in the installer window | accepted |
+| [0017](0017-take-the-spacemouse-through-space-juggler.md) | Take the SpaceMouse through Space Juggler | proposed |
