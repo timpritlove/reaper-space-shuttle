@@ -4,7 +4,7 @@
   the driver case goes to Space Juggler, space-juggler ADR-0004), ADR-0015 and ADR-0008's registration (no own
   registration any more), and the input setting
 - Date: 2026-10-14
-- Related: space-juggler ADR-0001 … 0004 (`github.com/timpritlove/space-juggler`)
+- Related: space-juggler ADR-0001 … 0004 (`github.com/metaebene/space-juggler`)
 
 ## Context
 

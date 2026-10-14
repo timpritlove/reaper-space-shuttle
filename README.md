@@ -44,4 +44,4 @@ make run         # bauen, ins portable Entwicklungs-REAPER (.dev/reaper) install
 make release     # signiertes, notarisiertes Installationspaket in dist/ (ADR-0009)
 ```
 
-Voraussetzungen: Xcode 27 / Swift 6.2 oder neuer. Space Juggler kommt als Swift-Paket von GitHub (`timpritlove/space-juggler`).
+Voraussetzungen: Xcode 27 / Swift 6.2 oder neuer. Space Juggler kommt als Swift-Paket von GitHub (`metaebene/space-juggler`).

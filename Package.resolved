@@ -4,7 +4,7 @@
     {
       "identity" : "space-juggler",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/timpritlove/space-juggler.git",
+      "location" : "https://github.com/metaebene/space-juggler.git",
       "state" : {
         "revision" : "abf7a345bc2b837ed97f69ed178e0f39ca66316a",
         "version" : "0.2.0"
