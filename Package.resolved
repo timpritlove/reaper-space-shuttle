@@ -1,13 +1,13 @@
 {
-  "originHash" : "bca3885e9dac547282d9302b47b58035ea9e960bb44b5e29edb46591ba0b2c70",
+  "originHash" : "db44ba90810b7d9dfea07838c9bbcdd89222ec328eb3386ea1e570ccc54aa32d",
   "pins" : [
     {
       "identity" : "space-juggler",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/metaebene/space-juggler.git",
       "state" : {
-        "revision" : "3825f54ee921911cf1e82bf453c368fda50181e8",
-        "version" : "0.5.2"
+        "revision" : "00cc93b1f2cccbc05447a98bb03bb121ac7393b1",
+        "version" : "0.6.0"
       }
     }
   ],
