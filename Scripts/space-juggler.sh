@@ -1,7 +1,8 @@
 #!/bin/zsh
 # Builds Space Juggler.app from the space-juggler package this project depends on (ADR-0017) and prints its path.
 # Usage: Scripts/space-juggler.sh [debug|release] OUTPUT-DIRECTORY
-# Environment as for space-juggler's Scripts/build-space-juggler.sh: SIGN_IDENTITY, UNIVERSAL=1, TIMESTAMP=1.
+# Environment as for space-juggler's Scripts/build-space-juggler.sh: SIGN_IDENTITY, UNIVERSAL=1, TIMESTAMP=1,
+# SCRATCH_PATH (default .build/space-juggler-scratch).
 set -euo pipefail
 ROOT="${0:A:h:h}"
 cd "$ROOT"
@@ -17,4 +18,6 @@ def find(node):
             return found
 print(find(json.load(sys.stdin)) or "")')"
 [[ -n "$PACKAGE" ]] || { echo "space-juggler not found among the dependencies" >&2; exit 1; }
-"$PACKAGE/Scripts/build-space-juggler.sh" "${1:-debug}" "${2:?output directory}" | tail -1
+# SwiftPM's checkout of a dependency is read-only: Space Juggler builds in our own .build.
+SCRATCH_PATH="${SCRATCH_PATH:-$ROOT/.build/space-juggler-scratch}" \
+  "$PACKAGE/Scripts/build-space-juggler.sh" "${1:-debug}" "${2:?output directory}" | tail -1
