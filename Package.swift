@@ -10,7 +10,7 @@ let package = Package(
     ],
     dependencies: [
         // The SpaceMouse through Space Juggler (ADR-0017); from GitHub.
-        .package(url: "https://github.com/metaebene/space-juggler.git", from: "1.0.0"),
+        .package(url: "https://github.com/metaebene/space-juggler.git", from: "1.0.2"),
     ],
     targets: [
         // C mirror of the few REAPER SDK structs we need (ADR-0002).
